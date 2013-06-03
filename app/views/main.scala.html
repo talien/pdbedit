@@ -19,18 +19,36 @@
         </li>
        </ul>
      </div>
-     <div ng-show="ruleset_show" class="container">
+     <div ng-show="ruleset_show" class="container span12">
        <h3>{{ruleset.name}}</h3>
-       <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
+       <ng-switch on="is_editing">
+        <div ng-switch-when="true">
+         <ul>
+          <li ng-repeat="pattern in ruleset.patterns" class="row"> 
+           <input ng-model="pattern.pattern">{{pattern.pattern}}</input><a href="#" class="btn" ng-click="removePattern(ruleset.patterns, pattern)">-</a>
+          </li>
+         </ul>
+         <a href="#" ng-click="addPattern(ruleset.patterns)">Add</a>
+         <a href="#" ng-click="set()">Set</a>
+        </div>
+        <div ng-switch-default>
+         <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
+         <a href="#" ng-click="edit()">Edit</a>
+        </div>
+       </ng-switch>
        <h3>Rules:</h3>
        <accordion close-others="true">
-       <accordion-group ng-repeat="rule in ruleset.rules" heading="{{rule.id}}" class="span12">
+       <accordion-group ng-repeat="rule in ruleset.rules" heading="{{rule.id}}" class="span11">
           <div>
            <h3>Provider: {{rule.provider}} Class: {{rule.rule_class}}</h3>
            <h4>Patterns:</h4>
-           <div ng-repeat="pattern in rule.patterns">{{pattern.pattern}}</div>
+           <table class="table">
+           <tr ng-repeat="pattern in rule.patterns"><td>{{pattern.pattern}}</td></tr>
+           </table>
            <h4>Tags:</h4>
-           <div ng-repeat="tag in rule.tags">{{tag}}</div>
+           <ul>
+             <li ng-repeat="tag in rule.tags">{{tag}}</li>
+           </ul>
          </div>
        </accordion-group>
        </accordion>
