@@ -1,0 +1,40 @@
+@(title: String)
+<!doctype html>
+<html ng-app="sctest">
+ <head>
+   <!--<script src="assets/angular.min.js"></script>-->
+   <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <link href="assets/css/bootstrap.css" rel="stylesheet">
+    <link href="assets/css/flat-ui.css" rel="stylesheet">
+   <script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>
+   <script src="assets/sctest.js"></script>
+ </head>
+ <body>
+  <h1> Test</h1>
+  <div ng-controller="scload">
+     <div class="span3 bs-docs-sidebar">
+        <ul class="nav nav-list bs-docs-sidenav">
+         <li ng-repeat="name in test_data">
+          <a href="#" class="" ng-click="loadruleset(name)" >{{name}}</a>
+        </li>
+       </ul>
+     </div>
+     <div ng-show="ruleset_show" class="container">
+       <h3>{{ruleset.name}}</h3>
+       <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
+       <h3>Rules:</h3>
+       <accordion close-others="true">
+       <accordion-group ng-repeat="rule in ruleset.rules" heading="{{rule.id}}" class="span12">
+          <div>
+           <h3>Provider: {{rule.provider}} Class: {{rule.rule_class}}</h3>
+           <h4>Patterns:</h4>
+           <div ng-repeat="pattern in rule.patterns">{{pattern.pattern}}</div>
+           <h4>Tags:</h4>
+           <div ng-repeat="tag in rule.tags">{{tag}}</div>
+         </div>
+       </accordion-group>
+       </accordion>
+     </div>
+  </div>
+ </body>
+</html>
