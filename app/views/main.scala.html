@@ -3,15 +3,22 @@
 <html ng-app="sctest">
  <head>
    <!--<script src="assets/angular.min.js"></script>-->
+   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
-    <link href="assets/css/bootstrap.css" rel="stylesheet">
+   <!-- <link href="assets/css/bootstrap.css" rel="stylesheet">-->
     <link href="assets/css/flat-ui.css" rel="stylesheet">
-   <script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>
+   <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.3.0.js"></script>
+   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+   <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
+   <script src="assets/uuid.js"></script>
    <script src="assets/sctest.js"></script>
  </head>
  <body>
   <h1> Test</h1>
   <div ng-controller="scload">
+
+     <!-- Sidebar -->
+
      <div class="span3 bs-docs-sidebar">
         <ul class="nav nav-list bs-docs-sidenav">
          <li ng-repeat="name in test_data">
@@ -19,27 +26,62 @@
         </li>
        </ul>
      </div>
+
+     <!-- End Sidebar -->
+
+     <!-- Ruleset -->
+
      <div ng-show="ruleset_show" class="container span12">
        <h3>{{ruleset.name}}</h3>
        <ng-switch on="is_editing">
         <div ng-switch-when="true">
          <ul>
-          <li ng-repeat="pattern in ruleset.patterns" class="row"> 
-           <input ng-model="pattern.pattern">{{pattern.pattern}}</input><a href="#" class="btn" ng-click="removePattern(ruleset.patterns, pattern)">-</a>
+          <li ng-repeat="pattern in ruleset.patterns"> 
+           <input ng-model="pattern.pattern"></input><a href="#" ng-click="removePattern(ruleset.patterns, pattern)">-</a>
           </li>
          </ul>
-         <a href="#" ng-click="addPattern(ruleset.patterns)">Add</a>
+         <a href="#" ng-click="addPattern(ruleset.patterns)">Add pattern</a>
          <a href="#" ng-click="set()">Set</a>
         </div>
         <div ng-switch-default>
          <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
-         <a href="#" ng-click="edit()">Edit</a>
+         <a href="#" ng-click="edit()">Edit ruleset patterns</a>
         </div>
        </ng-switch>
+
+       <!-- Rules -->
+
        <h3>Rules:</h3>
        <accordion close-others="true">
-       <accordion-group ng-repeat="rule in ruleset.rules" heading="{{rule.id}}" class="span11">
-          <div>
+       <accordion-group ng-repeat="rule in ruleset.rules" class="span11">
+          <accordion-heading>{{rule.id}}</accordion-heading>
+          <ng-switch on="is_rule_editing">
+          <!-- Editing rule content-->
+          <div ng-switch-when="true">
+           Provider: <input ng-model="rule.provider"></input>
+           Class: <input ng-model="rule.rule_class"></input> <!-- TODO: select -->
+          <table>
+          <tr ng-repeat="pattern in rule.patterns"> 
+            <td>
+             <input ng-model="pattern.pattern" class="row span9"></input>
+             <a href="#" ng-click="removePattern(rule.patterns, pattern)">-</a>
+             <a href="#" ng-click="openEditor(pattern)">/</a>
+            </td>
+           </tr>
+          </table>
+          <a href="#" ng-click="addPattern(rule.patterns)">Add pattern</a>
+          <h4>Tags:</h4>
+           <ul>
+             <li ng-repeat="tag in rule.tags">
+               <input ng-model="tag"></input><a href="#" ng-click="removePattern(rule.tags, tag)">-</a>
+             </li>
+           </ul>
+          <a href="#" ng-click="addTags(rule.tags)">Add tag</a>
+          <a href="#" ng-click="set_rule()">Set</a>
+          </div>
+          <!-- End Editing rule content-->
+
+          <div ng-switch-default>
            <h3>Provider: {{rule.provider}} Class: {{rule.rule_class}}</h3>
            <h4>Patterns:</h4>
            <table class="table">
@@ -49,10 +91,33 @@
            <ul>
              <li ng-repeat="tag in rule.tags">{{tag}}</li>
            </ul>
+           <a href="#" ng-click="edit_rule()">Edit rule</a>
+           <a href="#" ng-click="removePattern(ruleset.rules, rule)">Remove rule</a>
          </div>
+         </ng-switch>
        </accordion-group>
        </accordion>
+       <a href="#" ng-click="add_rule(ruleset.rules)">Add rule</a>
+
+       <!-- End Rules -->
      </div>
+
+     <!-- End Ruleset -->
+
+    <div modal="is_pattern_editor_open" close="closeEditor()" options="modal_opts">
+        <div class="modal-header">
+            <h4>{{ editing_pattern.pattern}}</h4>
+        </div>
+        <div class="modal-body">
+      lofasz
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-warning cancel" ng-click="closeEditor()">Cancel</button>
+        </div>
+    </div>
   </div>
+
+  </div>
+
  </body>
 </html>
