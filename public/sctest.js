@@ -43,17 +43,57 @@ var populate_parser_attributes_from_token = function(scope, token)
    scope.parser_attributes = parts[2];
 };
 
+var is_delimiter = function(character, delimiters)
+{
+   for (var i=0;i<delimiters.length;i++)
+   {
+      if (delimiters[i] === character)
+      {
+         return true;
+      }
+   }
+   return false;
+};
+
+var split_by_delimiters = function(str, delimiters)
+{
+   var res = Array();
+   var index = 0;
+   var is_in_parser = false;
+   var current_token = "";
+   for (var i=0; i<str.length; i++)
+   {
+      if (str[i] == '@')
+      {
+         is_in_parser = !is_in_parser;
+      };
+
+      if (!is_in_parser && is_delimiter(str[i], delimiters))
+      {
+         if (current_token !== "")
+         {
+           res.push({ value: current_token, index: index, type: "token"});
+           current_token = "";
+           index++;
+         }
+         res.push({ value: str[i], index: index, type: "delimiter"});
+         index++;
+      }
+      else
+      {
+         current_token = current_token + str[i];
+      }
+   }
+   if (current_token !== "")
+   {
+      res.push({ value: current_token, index: index, type: "token"});
+   };
+   return res;
+};
+
 var tokenize = function (str)
 {
-   var items = str.split(" ");
-   var result = new Array();
-   for (i=0; i<items.length; i++)
-   {
-       result[i] = new Object();
-       result[i].value = items[i];
-       result[i].index = i;
-   }
-   return result;
+   return split_by_delimiters(str, " -;");
 };
 
 var join = function(param)
@@ -61,19 +101,19 @@ var join = function(param)
    if (typeof(param) == 'undefined' || param == null) {
         return '';
    }
-   var res = new Array();
+   var res = "";
    for (var i = 0; i < param.length; i++)
    {
-       res[i] = param[i].value;
-   }
-   return res.join(' ');
+      res = res + param[i].value;
+   };
+   return res;
 };
-
 
 scmodule.controller("scload", function($scope, $http) {
    $http.get("namelist").then(function(res) {
        $scope.test_data = res.data;
    });
+
    $scope.loadruleset = function(rname)
    {
       $http.get("ruleset/"+rname).then(function(res) {
@@ -155,11 +195,13 @@ scmodule.controller("scload", function($scope, $http) {
     $scope.test_change = function(model, evt)
     {
         var index = parseInt(evt.target.id.split("_")[1]);
-        $scope.editing = true;
         $scope.index = index;
+        $scope.token = $scope.logelements[index];
+        if ($scope.token.type === 'delimiter')
+           return;
+        $scope.editing = true;
         $scope.selected_parser = { "name":"" };
         $scope.parser_variable = "";
-        $scope.token = $scope.logelements[index];
         if (is_parser($scope.token.value))
         {
             populate_parser_attributes_from_token($scope, $scope.token.value);
@@ -180,12 +222,22 @@ scmodule.controller("scload", function($scope, $http) {
            }
            else
            {
-              res[i] = { "value": "@" + $scope.selected_parser.name + ":" + $scope.parser_variable+ ":" + $scope.parser_attributes + "@", "index" : index };
+              res[i] = { "value": "@" + $scope.selected_parser.name + ":" + $scope.parser_variable+ ":" + $scope.parser_attributes + "@", "index" : index , type:'token'};
            }
         }
         $scope.logelements = res;
         $scope.parser_variable = "";
         $scope.parser_attributes = "";
+    };
+
+    $scope.cancel_item = function()
+    {
+        $scope.editing = false;
+    };
+
+    $scope.to_html = function(str)
+    {
+        return str;
     };
 
 });

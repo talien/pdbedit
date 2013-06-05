@@ -42,7 +42,7 @@
           </li>
          </ul>
          <a href="#" ng-click="addPattern(ruleset.patterns)" class="btn btn-success">Add pattern</a>
-         <a href="#" ng-click="set()" class="btn btn-success">Set</a>
+         <a href="#" ng-click="set()" class="btn btn-success">Save ruleset patterns</a>
         </div>
         <div ng-switch-default>
          <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
@@ -79,7 +79,7 @@
              </li>
            </ul>
           <a href="#" ng-click="addTags(rule.tags)" class="btn btn-success">Add tag</a>
-          <a href="#" ng-click="set_rule()" class="btn btn-success">Set</a>
+          <a href="#" ng-click="set_rule()" class="btn btn-success">Save rule</a>
           </div>
           <!-- End Editing rule content-->
 
@@ -120,7 +120,7 @@
        <h3 ng-show="show_click_on_tokens" class="panel-title">Click on tokens to edit them:</h3>
        <div class="row">
         <div class="span"  ng-repeat="i in logelements">
-          <a href="#" class="btn" ng-click="test_change(logelements, $event)">{{i.value}}</a>
+          <a href="#" class="btn" ng-class="{ 'delimiter' : 'disabled', 'token':'btn-primary'}[i.type]" ng-click="test_change(logelements, $event)" id="token_{{i.index}}">{{to_html(i.value)}}</a>
         </div>
        </div>
        <div ng-show="editing" class="span6">
@@ -142,7 +142,8 @@
           <h4 class="span3"> Parser attributes:</h4>
           <input type="text" ng-model="parser_attributes" class="span3"/>
          </div>
-         <a href="#" class="btn btn-block btn-large span3" ng-click="save_item()">Set</a>
+        <a href="#" class="btn btn-success" ng-click="save_item()">Set parser</a>
+        <a href="#" class="btn btn-warning" ng-click="cancel_item()">Cancel token edit</a>
        </div>
         </div>
         <div class="modal-footer">
