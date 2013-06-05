@@ -8,10 +8,11 @@
    <!-- <link href="assets/css/bootstrap.css" rel="stylesheet">-->
     <link href="assets/css/flat-ui.css" rel="stylesheet">
    <script src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.3.0.js"></script>
-   <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+   <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
    <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
    <script src="assets/uuid.js"></script>
    <script src="assets/sctest.js"></script>
+   <link href="assets/my.css" rel="stylesheet">
  </head>
  <body>
   <h1> Test</h1>
@@ -37,21 +38,22 @@
         <div ng-switch-when="true">
          <ul>
           <li ng-repeat="pattern in ruleset.patterns"> 
-           <input ng-model="pattern.pattern"></input><a href="#" ng-click="removePattern(ruleset.patterns, pattern)">-</a>
+           <input ng-model="pattern.pattern"></input><a href="#" ng-click="removePattern(ruleset.patterns, pattern)" class="btn btn-danger">-</a>
           </li>
          </ul>
-         <a href="#" ng-click="addPattern(ruleset.patterns)">Add pattern</a>
-         <a href="#" ng-click="set()">Set</a>
+         <a href="#" ng-click="addPattern(ruleset.patterns)" class="btn btn-success">Add pattern</a>
+         <a href="#" ng-click="set()" class="btn btn-success">Set</a>
         </div>
         <div ng-switch-default>
          <div ng-repeat="pattern in ruleset.patterns">{{pattern.pattern}}</div>
-         <a href="#" ng-click="edit()">Edit ruleset patterns</a>
+         <a href="#" ng-click="edit()" class="btn btn-warning">Edit ruleset patterns</a>
         </div>
        </ng-switch>
 
        <!-- Rules -->
 
        <h3>Rules:</h3>
+       <a href="#" ng-click="add_rule(ruleset.rules)" class="btn btn-success">Add rule</a>
        <accordion close-others="true">
        <accordion-group ng-repeat="rule in ruleset.rules" class="span11">
           <accordion-heading>{{rule.id}}</accordion-heading>
@@ -64,20 +66,20 @@
           <tr ng-repeat="pattern in rule.patterns"> 
             <td>
              <input ng-model="pattern.pattern" class="row span9"></input>
-             <a href="#" ng-click="removePattern(rule.patterns, pattern)">-</a>
-             <a href="#" ng-click="openEditor(pattern)">/</a>
+             <a href="#" ng-click="removePattern(rule.patterns, pattern)" class="btn btn-danger">-</a>
+             <a href="#" ng-click="openEditor(pattern)" class="btn btn-warning">Use editor</a>
             </td>
            </tr>
           </table>
-          <a href="#" ng-click="addPattern(rule.patterns)">Add pattern</a>
+          <a href="#" ng-click="addPattern(rule.patterns)" class="btn btn-success">Add pattern</a>
           <h4>Tags:</h4>
            <ul>
              <li ng-repeat="tag in rule.tags">
-               <input ng-model="tag"></input><a href="#" ng-click="removePattern(rule.tags, tag)">-</a>
+               <input ng-model="tag"></input><a href="#" class="btn btn-danger" ng-click="removePattern(rule.tags, tag)">-</a>
              </li>
            </ul>
-          <a href="#" ng-click="addTags(rule.tags)">Add tag</a>
-          <a href="#" ng-click="set_rule()">Set</a>
+          <a href="#" ng-click="addTags(rule.tags)" class="btn btn-success">Add tag</a>
+          <a href="#" ng-click="set_rule()" class="btn btn-success">Set</a>
           </div>
           <!-- End Editing rule content-->
 
@@ -91,31 +93,65 @@
            <ul>
              <li ng-repeat="tag in rule.tags">{{tag}}</li>
            </ul>
-           <a href="#" ng-click="edit_rule()">Edit rule</a>
-           <a href="#" ng-click="removePattern(ruleset.rules, rule)">Remove rule</a>
+           <a href="#" ng-click="edit_rule()" class="btn btn-warning">Edit rule</a>
+           <a href="#" ng-click="removePattern(ruleset.rules, rule)" class="btn btn-danger">Remove rule</a>
          </div>
          </ng-switch>
        </accordion-group>
        </accordion>
-       <a href="#" ng-click="add_rule(ruleset.rules)">Add rule</a>
 
        <!-- End Rules -->
      </div>
 
      <!-- End Ruleset -->
 
+    <!-- Modal pattern edit -->
     <div modal="is_pattern_editor_open" close="closeEditor()" options="modal_opts">
         <div class="modal-header">
             <h4>{{ editing_pattern.pattern}}</h4>
         </div>
         <div class="modal-body">
-      lofasz
+      <h3 class="panel-title">Paste a log line here:</h3>
+       <div class="row">
+       <div class="span12">
+        <input type="text" log-line ng-model="logelements" class="span12"/>
+       </div>
+       </div>
+       <h3 ng-show="show_click_on_tokens" class="panel-title">Click on tokens to edit them:</h3>
+       <div class="row">
+        <div class="span"  ng-repeat="i in logelements">
+          <a href="#" class="btn" ng-click="test_change(logelements, $event)">{{i.value}}</a>
+        </div>
+       </div>
+       <div ng-show="editing" class="span6">
+        <h3 class="panel-title">Edit token attributes</h3>
+          <div class="row">
+          <h4 class="span6"> {{token.value}} -> @@{{selected_parser.name}}:{{parser_variable}}:{{parser_attributes}}@@ </h4>
+         </div>
+         <div class="row">
+          <h4 class="span3"> Parser type:</h4>
+          <select ng-model="selected_parser" ng-options="parser.name for parser in parser_select" class="span3">
+            <option value="">-- choose parser --</option>
+          </select>
+         </div>
+         <div class="row">
+          <h4 class="span3"> Parser variable name:</h4>
+          <input type="text" ng-model="parser_variable" class="span3"/>
+         </div>
+         <div class="row">
+          <h4 class="span3"> Parser attributes:</h4>
+          <input type="text" ng-model="parser_attributes" class="span3"/>
+         </div>
+         <a href="#" class="btn btn-block btn-large span3" ng-click="save_item()">Set</a>
+       </div>
         </div>
         <div class="modal-footer">
-            <button class="btn btn-warning cancel" ng-click="closeEditor()">Cancel</button>
+            <button class="btn btn-warning cancel" ng-click="cancelEditor()">Cancel</button>
+            <button class="btn btn-success ok" ng-click="saveEditor()">Save</button>
         </div>
     </div>
   </div>
+  <!-- End Modal pattern edit -->
 
   </div>
 
