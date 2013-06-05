@@ -152,12 +152,12 @@ scmodule.controller("scload", function($scope, $http) {
 
    $scope.addPattern = function(rules)
    {
-     rules.push({ pattern : "" });
+     rules.push({ text : "" });
    }
 
    $scope.addTags = function(tags)
    {
-     tags.push("");
+     tags.push({ text: ""});
    }
 
    $scope.removePattern = function(rules, rule)
@@ -169,7 +169,7 @@ scmodule.controller("scload", function($scope, $http) {
    {
      $scope.editing_pattern = pattern;
      $scope.is_pattern_editor_open = true;
-     $scope.logelements = tokenize($scope.editing_pattern.pattern);
+     $scope.logelements = tokenize($scope.editing_pattern.text);
    }
 
    $scope.cancelEditor = function ()
@@ -180,7 +180,7 @@ scmodule.controller("scload", function($scope, $http) {
    $scope.saveEditor = function()
    {
      $scope.is_pattern_editor_open = false;
-     $scope.editing_pattern.pattern = join($scope.logelements);
+     $scope.editing_pattern.text = join($scope.logelements);
    }
 
    $scope.modal_opts = {
@@ -190,7 +190,8 @@ scmodule.controller("scload", function($scope, $http) {
       dialogClass : "modal container span13"
    };
 
-    $scope.parser_select = [ {"name":"QSTRING"}, {"name":"ESTRING"}, {"name":"STRING"}];
+    $scope.parser_select = [ {name:"QSTRING"}, {name:"ESTRING"}, {name:"STRING"}, {name:"ANYSTRING"}, {name: "DOUBLE"}, {name:"EMAIL"}, {name:"FLOAT"}, {name:"HOSTNAME"},
+                             {name:"IPv4"}, {name:"IPv6"}, {name: "IPvANY"}, {name:"LLADDR"}, {name:"MACADDR"}, {name:"NUMBER"}, {name:"PCRE"}, {name:"SET"} ];
 
     $scope.test_change = function(model, evt)
     {

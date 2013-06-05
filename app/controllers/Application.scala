@@ -5,13 +5,13 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class Pattern(pattern: String)
-case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[Pattern], val tags: Seq[String])
-case class RuleSet(val name: String, val id:String, val patterns: Seq[Pattern], val rules: Seq[Rule])
+case class StringObj(text: String)
+case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj])
+case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule])
  
 object Application extends Controller {    
 
-    implicit val patternFormat = Json.format[Pattern]
+    implicit val stringobjFormat = Json.format[StringObj]
     implicit val ruleFormat = Json.format[Rule]
     implicit val rulesetFormat = Json.format[RuleSet]
 
@@ -23,15 +23,16 @@ object Application extends Controller {
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
         (ruleset \ "pattern") map ( pattern =>
-            Pattern(pattern.text) ),
+            StringObj(pattern.text) ),
         (ruleset \ "rules" \ "rule") map ( rule =>
             Rule(
                   (rule \ "@id").toString(),
                   (rule \ "@provider").toString(),
                   (rule \ "@class").toString(),
                   (rule \ "patterns" \ "pattern") map ( pattern =>
-                     Pattern(pattern.text) ),
-                  (rule \ "tags" \ "tag") map (tag => tag.text))
+                     StringObj(pattern.text) ),
+                  (rule \ "tags" \ "tag") map (tag => 
+                     StringObj(tag.text)))
     ))
 
     def index = Action { Ok( 
