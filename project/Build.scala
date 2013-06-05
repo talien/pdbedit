@@ -4,8 +4,8 @@ import play.Project._
  
 object ApplicationBuild extends Build {
  
-  val appName         = "myapp"
-  val appVersion      = "1.0"
+  val appName         = "pdbedit"
+  val appVersion      = "0.1"
  
   val appDependencies = Nil
  
