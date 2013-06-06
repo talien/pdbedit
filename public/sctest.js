@@ -1,4 +1,4 @@
-function uuid() {
+/*function uuid() {
   var s = [], itoh = '0123456789abcedf';
  
   // Make array of random hex digits. The UUID only has 32 digits in it, but we
@@ -20,11 +20,11 @@ function uuid() {
 
 function destroy(val, arr) {
     for (var i = 0; i < arr.length; i++) if (arr[i] === val) arr.splice(i, 1);
-}
+}*/
 
 scmodule = angular.module('sctest', ['ui.bootstrap']);
 
-var qstring_attribute_function = function(token)
+/*var qstring_attribute_function = function(token)
 {
    return token.charAt(0) + token.charAt(token.length-1);
 };
@@ -53,9 +53,9 @@ var is_delimiter = function(character, delimiters)
       }
    }
    return false;
-};
+};*/
 
-var split_by_delimiters = function(str, delimiters)
+/*var split_by_delimiters = function(str, delimiters)
 {
    var res = Array();
    var index = 0;
@@ -107,7 +107,7 @@ var join = function(param)
       res = res + param[i].value;
    };
    return res;
-};
+};*/
 
 scmodule.controller("scload", function($scope, $http) {
    $http.get("namelist").then(function(res) {
@@ -162,7 +162,7 @@ scmodule.controller("scload", function($scope, $http) {
 
    $scope.removePattern = function(rules, rule)
    {
-     destroy(rule, rules);
+     remove_from_array(rule, rules);
    }
 
    $scope.openEditor = function (pattern)
