@@ -43,7 +43,7 @@ define ["util"], (util) ->
      expect(split_by_delimiters(str, delimiters)).toEqual([
        value: "@ESTRING:alma-bela:@"
        index: 0
-       type: "token"
+       type: "parser"
      ])
 
 
@@ -58,6 +58,32 @@ define ["util"], (util) ->
         value: " "
         index: 1
         type: "delimiter"
+     ])
+
+    it "should split two parsers without delimiters", ->
+     str = "@::@@::@"
+     delimiters = " "
+     expect(split_by_delimiters(str, delimiters)).toEqual([
+        value: "@::@"
+        index: 0
+        type: "parser"
+      ,
+        value: "@::@"
+        index: 1
+        type: "parser"
+     ])
+
+    it "should split a token and a parser without delimiters", ->
+     str = "alma@::@"
+     delimiters = " "
+     expect(split_by_delimiters(str, delimiters)).toEqual([
+        value: "alma"
+        index: 0
+        type: "token"
+      ,
+        value: "@::@"
+        index: 1
+        type: "parser"
      ])
 
   describe "tokenizer",() ->

@@ -48,39 +48,61 @@ class Tokenizer
       i++
     false
 
-  add_token : (value) ->
+  add_item : (value, type) ->
     @res.push
       value:value
       index:@index
-      type:"token"
+      type:type
     @index++
 
+  add_token : (value) ->
+    @add_item(value, "token")
+   
   add_delimiter : (value) ->
-    @res.push
-      value:value
-      index:@index
-      type:"delimiter"
-    @index++
- 
+    @add_item(value, "delimiter")
+
+  add_parser : (value) ->
+    @add_item(value, "parser")
+
+  add_current_token: () ->
+    if @current_token isnt ""
+      @add_token @current_token
+      @current_token = ""
+
+  add_current_token_as_parser: () ->
+    if @current_token isnt ""
+      @add_parser @current_token
+      @current_token = ""
+
+  extend_current_token_with: (chr) ->
+    @current_token = @current_token + chr
+
+  is_parser_special: (chr) ->
+    chr is "@"
+
   split : (str) ->
     @res = Array()
     @index = 0
     is_in_parser = false
-    current_token = ""
+    @current_token = ""
     i = 0
 
     while i < str.length
-      is_in_parser = not is_in_parser  if str[i] is "@"
-      if not is_in_parser and @is_delimiter(str[i])
-        if current_token isnt ""
-          @add_token(current_token)
-          current_token = ""
-        @add_delimiter(str[i])
+      if is_in_parser and @is_parser_special str[i]
+        @extend_current_token_with str[i]
+        @add_current_token_as_parser()
+        is_in_parser = false
       else
-        current_token = current_token + str[i]
+        if @is_parser_special str[i]
+          is_in_parser = true
+          @add_current_token()
+        if not is_in_parser and @is_delimiter str[i]
+          @add_current_token()
+          @add_delimiter str[i]
+        else
+          @extend_current_token_with str[i]
       i++
-    if current_token isnt ""
-      @add_token(current_token)
+    @add_current_token()
     @res
 
 split_by_delimiters = (str, delimiters) ->
