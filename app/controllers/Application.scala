@@ -5,9 +5,11 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 
-case class StringObj(text: String)
-case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj])
-case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule])
+abstract class PatternDBItem
+
+case class StringObj(text: String) extends PatternDBItem
+case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
+case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
  
 object Application extends Controller {    
 
