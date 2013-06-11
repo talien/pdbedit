@@ -37,6 +37,31 @@ object Application extends Controller {
                      StringObj(tag.text)))
     ))
 
+
+   def to_xml(item: PatternDBItem) : scala.xml.Node = {
+       item match {
+          case StringObj(text) =>
+             scala.xml.Unparsed(text)
+          case Rule(id, provider, rule_class, patterns, tags) =>
+            <rule id={id} provider={provider} class={rule_class}>
+             <patterns>
+               { patterns.map( pattern => <pattern>{to_xml(pattern)}</pattern> ) }
+             </patterns>
+             <tags>
+               { tags.map( tag => <tag>{to_xml(tag)}</tag> ) }
+             </tags>
+            </rule>
+          case RuleSet(name, id, patterns, rules) =>
+            <ruleset id={id} name={name}>
+            <patterns>
+             { patterns.map( pattern => <pattern>{to_xml(pattern)}</pattern> ) }
+            </patterns>
+            <rules>
+              { rules.map( rule => to_xml(rule) ) }
+            </rules>
+            </ruleset>
+       }
+   }
     def index = Action { Ok( 
         views.html.main.render("Hello") 
     ) }
