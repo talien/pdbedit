@@ -2,4 +2,5 @@ GET /assets/*file     controllers.Assets.at(path="/public",file)
 GET /namelist       controllers.Application.namelist()
 GET /ruleset/*rulesetid      controllers.Application.ruleset(rulesetid)
 GET /   controllers.Application.index()
+PUT /ruleset/*rulesetid     controllers.Application.save_ruleset(rulesetid)
 

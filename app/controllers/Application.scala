@@ -62,6 +62,25 @@ object Application extends Controller {
             </ruleset>
        }
    }
+
+   def save_ruleset_impl(ruleset:RuleSet): String = {
+       val xml = to_xml(ruleset)
+       return save_ruleset_xml(xml, ruleset.name)
+   }
+
+   def save_ruleset_xml(ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
+       val pdb = scala.xml.XML.loadFile("data/postfix.xml")
+       val removeIt = new scala.xml.transform.RewriteRule {
+          override def transform(n: scala.xml.Node): scala.xml.NodeSeq = n match {
+              case e: scala.xml.Elem if (e \ "@name").text == ruleset_name => scala.xml.NodeSeq.Empty
+              case n => n
+            }
+       }
+       val new_set = (new scala.xml.transform.RuleTransformer(removeIt).transform(pdb)) \ "ruleset" ++ ruleset_xml
+       scala.xml.XML.save("data/new_xml.xml", <patterndb>{new_set}</patterndb>)
+       return "OK"
+   }
+
     def index = Action { Ok( 
         views.html.main.render("Hello") 
     ) }
@@ -73,5 +92,9 @@ object Application extends Controller {
 
    def ruleset(ruleset_name : String ) = Action { 
       Ok( Json.toJson(map_ruleset(get_ruleset(ruleset_name ))))
+   }
+
+   def save_ruleset(ruleset_name : String) = Action(parse.json) { request =>
+      Ok(save_ruleset_impl(request.body.asOpt[RuleSet].get))
    }
 }

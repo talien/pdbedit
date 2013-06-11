@@ -15,6 +15,11 @@ scmodule.controller("scload", function($scope, $http) {
       $scope.is_rule_editing = false;
       $scope.is_editing = false;
    };
+
+   $scope.save_ruleset = function(ruleset_name)
+   {
+      $http.put("ruleset/" + ruleset_name, $scope.ruleset);
+   };
    $scope.edit = function()
    {
      $scope.is_editing = true;
