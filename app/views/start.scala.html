@@ -1,0 +1,21 @@
+@(title: String)
+<html>
+<head>
+   <link href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet">
+   <link href="assets/css/flat-ui.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+<h1 class="title text-center">Welcome!</h1>
+@helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
+    
+    <input type="file" name="picture" class="input btn-file btn-large">
+    
+    <p>
+        <input type="submit" class="btn" value="Upload file">
+    </p>
+    
+}
+</div>
+</body>
+</html>
