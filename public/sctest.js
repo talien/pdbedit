@@ -1,5 +1,19 @@
 scmodule = angular.module('sctest', ['ui.bootstrap']);
 
+create_empty_ruleset = function(ruleset_name)
+{
+ var ruleset = { 
+     name: ruleset_name,
+     id : uuid(),
+     patterns : [],
+     rules : [],
+     tags : [],
+
+  };
+ return ruleset;
+}
+
+
 scmodule.controller("scload", function($scope, $http, $dialog) {
    var add_ruleset_dialog_template = '<div class="modal-header">'+
           '<h1>Adding new ruleset</h1>'+
@@ -21,20 +35,22 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
     dialogClass: 'modal span7',
    };
 
-   $scope.add_ruleset = function(ruleset_name)
+   $scope.ruleset_names = [] // meh, it's the ruleset name list, rename it ASAP
+
+   $scope.ruleset_editor = {
+       ruleset : create_empty_ruleset(''),
+       show : false,
+       is_rule_editing : false,
+       is_editing : false,
+   }
+
+   $scope.add_ruleset = function(ruleset_name, ruleset_editor)
    {
-      $scope.ruleset = { 
-         name: ruleset_name,
-         id : uuid(),
-         patterns : [],
-         rules : [],
-         tags : [],
-  
-      };
-      $scope.ruleset_show = true;
-      $scope.is_rule_editing = false;
-      $scope.is_editing = false;
-      $scope.test_data.push(ruleset_name);
+      ruleset_editor.ruleset = create_empty_ruleset(ruleset_name)
+      ruleset_editor.ruleset_show = true;
+      ruleset_editor.is_rule_editing = false;
+      ruleset_editor.is_editing = false;
+      $scope.ruleset_names.push(ruleset_name);
    };
 
     $scope.open_add_ruleset_dialog = function()
@@ -43,7 +59,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
       d.open().then(function(result){
         if(result)
         {
-           $scope.add_ruleset(result);
+           $scope.add_ruleset(result, $scope.ruleset_editor);
         }
       });
    };
@@ -56,63 +72,63 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
    $scope.refresh_name_list = function()
    {
      $http.get("namelist").then(function(res) {
-       $scope.test_data = res.data;
+       $scope.ruleset_names = res.data;
      });
    }
    
    $scope.refresh_name_list()
 
-   $scope.loadruleset = function(rname)
+   $scope.loadruleset = function(ruleset_name, ruleset_editor)
    {
       $http.get("ruleset/"+rname).then(function(res) {
-         $scope.ruleset = res.data;
+         ruleset_editor.ruleset = res.data;
       });
      
-      $scope.ruleset_show = true;
-      $scope.is_rule_editing = false;
-      $scope.is_editing = false;
+      ruleset_editor.ruleset_show = true;
+      ruleset_editor.is_rule_editing = false;
+      ruleset_editor.is_editing = false;
    };
 
-   $scope.on_save_ruleset = function(ruleset_name)
+   $scope.on_save_ruleset = function(ruleset_name, ruleset_editor)
    {
-      $http.put("ruleset/" + ruleset_name, $scope.ruleset);
+      $http.put("ruleset/" + ruleset_name, ruleset_editor.ruleset);
    };
 
-   $scope.on_delete_ruleset = function(ruleset_name)
+   $scope.on_delete_ruleset = function(ruleset_name, ruleset_editor)
    {
-      $http.delete("ruleset/" + ruleset_name, $scope.ruleset).then(function(res)
+      $http.delete("ruleset/" + ruleset_name, ruleset_editor.ruleset).then(function(res)
       {
         $scope.refresh_name_list()
       });
-      $scope.ruleset_show = false;
-      $scope.is_rule_editing = false;
-      $scope.is_editing = false;
+      ruleset_editor.ruleset_show = false;
+      ruleset_editor.is_rule_editing = false;
+      ruleset_editor.is_editing = false;
    };
 
-   $scope.edit = function()
+   $scope.edit = function(ruleset_editor)
    {
-     $scope.is_editing = true;
+     ruleset_editor.is_editing = true;
    }
 
-   $scope.set = function()
+   $scope.set = function(ruleset_editor)
    {
-     $scope.is_editing = false;
+     ruleset_editor.is_editing = false;
    }
 
-   $scope.edit_rule = function()
+   $scope.edit_rule = function(ruleset_editor)
    {
-     $scope.is_rule_editing = true;
+     ruleset_editor.is_rule_editing = true;
    }
 
-   $scope.set_rule = function()
+   $scope.set_rule = function(ruleset_editor)
    {
-     $scope.is_rule_editing = false;
+     ruleset_editor.is_rule_editing = false;
    }
 
-   $scope.add_rule = function(rules)
+   $scope.add_rule = function(rules, ruleset_editor)
    {
      rules.push( { provider: "", rule_class: "", patterns: Array(), tags: Array(), id: uuid() });
-     $scope.is_rule_editing = true;
+     ruleset_editor.is_rule_editing = true;
    }
 
    $scope.addPattern = function(rules)
