@@ -20,6 +20,9 @@
   <div ng-controller="scload">
 
      <!-- Sidebar -->
+     <div class="header text-right">
+      <a href="/logout"><i class="icon-home"></i>Logout</a>
+     </div>
 
      <div class="span3 bs-docs-sidebar">
         <ul class="nav nav-list bs-docs-sidenav">
@@ -27,6 +30,7 @@
           <a href="#" class="" ng-click="loadruleset(name)" >{{name}}</a>
         </li>
        </ul>
+       <a href="#" class="btn btn-warning" ng-click="on_add_ruleset()"><i class="icon-plus-sign"></i> Add ruleset</a>
      </div>
 
      <!-- End Sidebar -->
@@ -42,12 +46,12 @@
            <input ng-model="pattern.text"></input><a href="#" ng-click="removePattern(ruleset.patterns, pattern)" class="btn btn-danger">-</a>
           </li>
          </ul>
-         <a href="#" ng-click="addPattern(ruleset.patterns)" class="btn btn-success">Add pattern</a>
+         <a href="#" ng-click="addPattern(ruleset.patterns)" class="btn btn-success"><i class="icon-plus-sign"></i> Add pattern</a>
          <a href="#" ng-click="set()" class="btn btn-success">Save ruleset patterns</a>
         </div>
         <div ng-switch-default>
          <div ng-repeat="pattern in ruleset.patterns">{{pattern.text}}</div>
-         <a href="#" ng-click="edit()" class="btn btn-warning">Edit ruleset patterns</a>
+         <a href="#" ng-click="edit()" class="btn btn-warning"><i class="icon-edit"></i> Edit ruleset patterns</a>
         </div>
        </ng-switch>
 
@@ -103,7 +107,8 @@
 
        <!-- End Rules -->
        <div class="row span9">
-         <a href="#" ng-click="save_ruleset(ruleset.name)" class="btn btn-success">Commit ruleset</a>
+         <a href="#" ng-click="on_save_ruleset(ruleset.name)" class="btn btn-success">Commit ruleset</a>
+         <a href="#" class="btn btn-danger" ng-click="on_delete_ruleset(ruleset.name)">Delete ruleset</a>
        </div>
      </div>
 

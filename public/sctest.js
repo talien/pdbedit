@@ -1,9 +1,66 @@
 scmodule = angular.module('sctest', ['ui.bootstrap']);
 
-scmodule.controller("scload", function($scope, $http) {
-   $http.get("namelist").then(function(res) {
+scmodule.controller("scload", function($scope, $http, $dialog) {
+   var add_ruleset_dialog_template = '<div class="modal-header">'+
+          '<h1>Adding new ruleset</h1>'+
+          '</div>'+
+          '<div class="modal-body">'+
+          '<p>Enter the new ruleset name <input ng-model="result" /></p>'+
+          '</div>'+
+          '<div class="modal-footer">'+
+          '<button ng-click="close(result)" class="btn btn-primary" >Close</button>'+
+          '</div>';
+
+
+   $scope.add_ruleset_opts = {
+    backdrop: true,
+    keyboard: true,
+    backdropClick: true,
+    template:  add_ruleset_dialog_template, // OR: templateUrl: 'path/to/view.html',
+    controller: 'AddRulesetDialogController',
+    dialogClass: 'modal span7',
+   };
+
+   $scope.add_ruleset = function(ruleset_name)
+   {
+      $scope.ruleset = { 
+         name: ruleset_name,
+         id : uuid(),
+         patterns : [],
+         rules : [],
+         tags : [],
+  
+      };
+      $scope.ruleset_show = true;
+      $scope.is_rule_editing = false;
+      $scope.is_editing = false;
+      $scope.test_data.push(ruleset_name);
+   };
+
+    $scope.open_add_ruleset_dialog = function()
+    {
+      var d = $dialog.dialog($scope.add_ruleset_opts);
+      d.open().then(function(result){
+        if(result)
+        {
+           $scope.add_ruleset(result);
+        }
+      });
+   };
+
+   $scope.on_add_ruleset = function()
+   {
+      $scope.open_add_ruleset_dialog();
+   }
+
+   $scope.refresh_name_list = function()
+   {
+     $http.get("namelist").then(function(res) {
        $scope.test_data = res.data;
-   });
+     });
+   }
+   
+   $scope.refresh_name_list()
 
    $scope.loadruleset = function(rname)
    {
@@ -16,10 +73,22 @@ scmodule.controller("scload", function($scope, $http) {
       $scope.is_editing = false;
    };
 
-   $scope.save_ruleset = function(ruleset_name)
+   $scope.on_save_ruleset = function(ruleset_name)
    {
       $http.put("ruleset/" + ruleset_name, $scope.ruleset);
    };
+
+   $scope.on_delete_ruleset = function(ruleset_name)
+   {
+      $http.delete("ruleset/" + ruleset_name, $scope.ruleset).then(function(res)
+      {
+        $scope.refresh_name_list()
+      });
+      $scope.ruleset_show = false;
+      $scope.is_rule_editing = false;
+      $scope.is_editing = false;
+   };
+
    $scope.edit = function()
    {
      $scope.is_editing = true;
@@ -158,3 +227,8 @@ scmodule.directive('logLine', function () {
   };
 });
 
+function AddRulesetDialogController($scope, dialog){
+  $scope.close = function(result){
+    dialog.close(result);
+  };
+}

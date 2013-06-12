@@ -1,6 +1,9 @@
 GET /assets/*file     controllers.Assets.at(path="/public",file)
 GET /namelist       controllers.Application.namelist()
 GET /ruleset/*rulesetid      controllers.Application.ruleset(rulesetid)
-GET /   controllers.Application.index()
+GET /index   controllers.Application.index()
+GET /     controllers.Application.start()
 PUT /ruleset/*rulesetid     controllers.Application.save_ruleset(rulesetid)
-
+DELETE /ruleset/*rulesetid     controllers.Application.delete_ruleset(rulesetid)
+POST  /upload       controllers.Application.upload()
+GET /logout    controllers.Application.logout()
