@@ -78,7 +78,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
    
    $scope.refresh_name_list()
 
-   $scope.loadruleset = function(ruleset_name, ruleset_editor)
+   $scope.load_ruleset = function(ruleset_name, ruleset_editor)
    {
       $http.get("ruleset/"+rname).then(function(res) {
          ruleset_editor.ruleset = res.data;
@@ -89,14 +89,14 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
       ruleset_editor.is_editing = false;
    };
 
-   $scope.on_save_ruleset = function(ruleset_name, ruleset_editor)
+   $scope.on_save_ruleset = function(ruleset_editor)
    {
-      $http.put("ruleset/" + ruleset_name, ruleset_editor.ruleset);
+      $http.put("ruleset/" + ruleset_editor.ruleset.ruleset_name, ruleset_editor.ruleset);
    };
 
-   $scope.on_delete_ruleset = function(ruleset_name, ruleset_editor)
+   $scope.on_delete_ruleset = function(ruleset_editor)
    {
-      $http.delete("ruleset/" + ruleset_name, ruleset_editor.ruleset).then(function(res)
+      $http.delete("ruleset/" + ruleset_editor.ruleset.ruleset_name, ruleset_editor.ruleset).then(function(res)
       {
         $scope.refresh_name_list()
       });
@@ -125,23 +125,18 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
      ruleset_editor.is_rule_editing = false;
    }
 
-   $scope.add_rule = function(rules, ruleset_editor)
+   $scope.add_rule = function(ruleset_editor)
    {
-     rules.push( { provider: "", rule_class: "", patterns: Array(), tags: Array(), id: uuid() });
+     ruleset_editor.ruleset.rules.push( { provider: "", rule_class: "", patterns: Array(), tags: Array(), id: uuid() });
      ruleset_editor.is_rule_editing = true;
    }
 
-   $scope.addPattern = function(rules)
+   $scope.add_string_object = function(items)
    {
-     rules.push({ text : "" });
+     items.push({ text : "" });
    }
 
-   $scope.addTags = function(tags)
-   {
-     tags.push({ text: ""});
-   }
-
-   $scope.removePattern = function(rules, rule)
+   $scope.remove_object = function(rules, rule) //Wehehe, what is this?
    {
      remove_from_array(rule, rules);
    }
