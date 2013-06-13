@@ -60,9 +60,17 @@ object Application extends Controller {
        }
    }
 
-   def get_ruleset_names(filename : String) : Seq[String]  =  (scala.xml.XML.loadFile(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
+   def open_pdb_file(filename: String) : scala.xml.Node = {
+       try {
+          scala.xml.XML.loadFile(filename)
+       } catch {
+           case e:org.xml.sax.SAXParseException => <patterndb></patterndb>
+       }
+   }
 
-   def get_ruleset(filename : String, ruleset_name : String) : scala.xml.Node = (((scala.xml.XML.loadFile(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
+   def get_ruleset_names(filename : String) : Seq[String]  =  (open_pdb_file(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
+
+   def get_ruleset(filename : String, ruleset_name : String) : scala.xml.Node = (((open_pdb_file(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
 
    def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
         val removeIt = new scala.xml.transform.RewriteRule {
@@ -75,14 +83,14 @@ object Application extends Controller {
    }
 
    def save_ruleset_xml(filename : String, ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
-       val pdb = scala.xml.XML.loadFile(filename)
+       val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset" ++ ruleset_xml
        scala.xml.XML.save(filename, <patterndb>{new_set}</patterndb>)
        return "OK"
    }
 
    def remove_ruleset(filename: String, ruleset_name: String) : String = {
-       val pdb = scala.xml.XML.loadFile(filename)
+       val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
        scala.xml.XML.save(filename, <patterndb>{new_set}</patterndb>)
        return "OK"
