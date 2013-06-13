@@ -141,6 +141,10 @@ object Application extends Controller {
       "error" -> "Missing file")
    }  }
 
+   def download = Action { request =>
+      Ok(scala.xml.Unparsed((new scala.xml.PrettyPrinter(120,4)).format(open_pdb_file(get_xml_file_from_request(request)))))
+   }
+
    def start = Action { request => 
      request.session.get("session") map { session =>
        Redirect(routes.Application.index) } getOrElse {
