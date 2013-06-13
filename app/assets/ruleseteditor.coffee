@@ -30,11 +30,10 @@ class RulesetEditor
         @is_rule_editing = false
         @is_editing = false
 
-    load_ruleset : (ruleset_name)->
-        @http.get("ruleset/"+ruleset_name).then( (res) ->
+    load_ruleset : (ruleset_name) ->
+        @http.get("ruleset/"+ruleset_name).then( (res) =>
            @ruleset = res.data
         )
-
         @ruleset_show = true
         @is_rule_editing = false
         @is_editing = false
