@@ -37,19 +37,11 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
 
    $scope.ruleset_names = [] // meh, it's the ruleset name list, rename it ASAP
 
-   $scope.ruleset_editor = {
-       ruleset : create_empty_ruleset(''),
-       show : false,
-       is_rule_editing : false,
-       is_editing : false,
-   }
+   $scope.ruleset_editor = new RulesetEditor($http);
 
-   $scope.add_ruleset = function(ruleset_name, ruleset_editor)
+   $scope.add_ruleset_and_edit = function(ruleset_name, ruleset_editor)
    {
-      ruleset_editor.ruleset = create_empty_ruleset(ruleset_name)
-      ruleset_editor.ruleset_show = true;
-      ruleset_editor.is_rule_editing = false;
-      ruleset_editor.is_editing = false;
+      $scope.ruleset_editor.add_ruleset(ruleset_name)
       $scope.ruleset_names.push(ruleset_name);
    };
 
@@ -59,7 +51,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
       d.open().then(function(result){
         if(result)
         {
-           $scope.add_ruleset(result, $scope.ruleset_editor);
+           $scope.add_ruleset_and_edit(result, $scope.ruleset_editor);
         }
       });
    };
@@ -77,59 +69,6 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
    }
    
    $scope.refresh_name_list()
-
-   $scope.load_ruleset = function(ruleset_name, ruleset_editor)
-   {
-      $http.get("ruleset/"+rname).then(function(res) {
-         ruleset_editor.ruleset = res.data;
-      });
-     
-      ruleset_editor.ruleset_show = true;
-      ruleset_editor.is_rule_editing = false;
-      ruleset_editor.is_editing = false;
-   };
-
-   $scope.on_save_ruleset = function(ruleset_editor)
-   {
-      $http.put("ruleset/" + ruleset_editor.ruleset.ruleset_name, ruleset_editor.ruleset);
-   };
-
-   $scope.on_delete_ruleset = function(ruleset_editor)
-   {
-      $http.delete("ruleset/" + ruleset_editor.ruleset.ruleset_name, ruleset_editor.ruleset).then(function(res)
-      {
-        $scope.refresh_name_list()
-      });
-      ruleset_editor.ruleset_show = false;
-      ruleset_editor.is_rule_editing = false;
-      ruleset_editor.is_editing = false;
-   };
-
-   $scope.edit = function(ruleset_editor)
-   {
-     ruleset_editor.is_editing = true;
-   }
-
-   $scope.set = function(ruleset_editor)
-   {
-     ruleset_editor.is_editing = false;
-   }
-
-   $scope.edit_rule = function(ruleset_editor)
-   {
-     ruleset_editor.is_rule_editing = true;
-   }
-
-   $scope.set_rule = function(ruleset_editor)
-   {
-     ruleset_editor.is_rule_editing = false;
-   }
-
-   $scope.add_rule = function(ruleset_editor)
-   {
-     ruleset_editor.ruleset.rules.push( { provider: "", rule_class: "", patterns: Array(), tags: Array(), id: uuid() });
-     ruleset_editor.is_rule_editing = true;
-   }
 
    $scope.add_string_object = function(items)
    {

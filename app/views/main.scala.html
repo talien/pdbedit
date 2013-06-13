@@ -12,7 +12,7 @@
    <link href="assets/css/flat-ui.css" rel="stylesheet">
    <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
    <script src="assets/util.js"></script>
-   <!--<script src="assets/ruleseteditor.js"></script>-->
+   <script src="assets/ruleseteditor.js"></script>
    <script src="assets/sctest.js"></script>
    <link href="assets/my.css" rel="stylesheet">
  </head>
@@ -28,7 +28,7 @@
      <div class="span3 bs-docs-sidebar">
         <ul class="nav nav-list bs-docs-sidenav">
          <li ng-repeat="name in ruleset_names">
-          <a href="#" class="" ng-click="load_ruleset(name, ruleset_editor)" >{{name}}</a>
+          <a href="#" class="" ng-click="ruleset_editor.load_ruleset(name)" >{{name}}</a>
         </li>
        </ul>
        <a href="#" class="btn btn-warning" ng-click="on_add_ruleset()"><i class="icon-plus-sign"></i> Add ruleset</a>
@@ -48,18 +48,18 @@
           </li>
          </ul>
          <a href="#" ng-click="add_string_object(ruleset_editor.ruleset.patterns)" class="btn btn-success"><i class="icon-plus-sign"></i> Add pattern</a>
-         <a href="#" ng-click="set(ruleset_editor)" class="btn btn-success">Save ruleset patterns</a>
+         <a href="#" ng-click="ruleset_editor.set()" class="btn btn-success">Save ruleset patterns</a>
         </div>
         <div ng-switch-default>
          <div ng-repeat="pattern in ruleset_editor.ruleset.patterns">{{pattern.text}}</div>
-         <a href="#" ng-click="edit(ruleset_editor)" class="btn btn-warning"><i class="icon-edit"></i> Edit ruleset patterns</a>
+         <a href="#" ng-click="ruleset_editor.edit()" class="btn btn-warning"><i class="icon-edit"></i> Edit ruleset patterns</a>
         </div>
        </ng-switch>
 
        <!-- Rules -->
 
        <h3>Rules:</h3>
-       <a href="#" ng-click="add_rule(ruleset_editor)" class="btn btn-success">Add rule</a>
+       <a href="#" ng-click="ruleset_editor.add_rule()" class="btn btn-success">Add rule</a>
        <accordion close-others="true">
        <accordion-group ng-repeat="rule in ruleset_editor.ruleset.rules" class="span11">
           <accordion-heading>{{rule.id}}</accordion-heading>
@@ -85,7 +85,7 @@
              </li>
            </ul>
           <a href="#" ng-click="add_string_object(rule.tags)" class="btn btn-success">Add tag</a>
-          <a href="#" ng-click="set_rule(ruleset_editor)" class="btn btn-success">Save rule</a>
+          <a href="#" ng-click="ruleset_editor.set_rule()" class="btn btn-success">Save rule</a>
           </div>
           <!-- End Editing rule content-->
 
@@ -99,7 +99,7 @@
            <ul>
              <li ng-repeat="tag in rule.tags">{{tag.text}}</li>
            </ul>
-           <a href="#" ng-click="edit_rule(ruleset_editor)" class="btn btn-warning">Edit rule</a>
+           <a href="#" ng-click="ruleset_editor.edit_rule()" class="btn btn-warning">Edit rule</a>
            <a href="#" ng-click="remove_object(ruleset_editor.ruleset.rules, rule)" class="btn btn-danger">Remove rule</a>
          </div>
          </ng-switch>
@@ -108,8 +108,8 @@
 
        <!-- End Rules -->
        <div class="row span9">
-         <a href="#" ng-click="on_save_ruleset(ruleset_editor)" class="btn btn-success">Commit ruleset</a>
-         <a href="#" class="btn btn-danger" ng-click="on_delete_ruleset(ruleset_editor)">Delete ruleset</a>
+         <a href="#" ng-click="ruleset_editor.save_ruleset()" class="btn btn-success">Commit ruleset</a>
+         <a href="#" class="btn btn-danger" ng-click="delete_ruleset(refresh_name_list)">Delete ruleset</a>
        </div>
      </div>
 
