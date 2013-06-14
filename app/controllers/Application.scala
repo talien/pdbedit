@@ -11,14 +11,9 @@ abstract class PatternDBItem
 case class StringObj(text: String) extends PatternDBItem
 case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
 case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
- 
-object Application extends Controller {    
 
-    implicit val stringobjFormat = Json.format[StringObj]
-    implicit val ruleFormat = Json.format[Rule]
-    implicit val rulesetFormat = Json.format[RuleSet]
-
-    def map_ruleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
+object RulesetConverter {
+    def xml_to_ruleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
         (ruleset \ "pattern") map ( pattern =>
@@ -33,7 +28,6 @@ object Application extends Controller {
                   (rule \ "tags" \ "tag") map (tag => 
                      StringObj(tag.text)))
     ))
-
 
    def to_xml(item: PatternDBItem) : scala.xml.Node = {
        item match {
@@ -60,6 +54,16 @@ object Application extends Controller {
        }
    }
 
+   def ruleset_to_xml(ruleset: RuleSet) : scala.xml.Node = to_xml(ruleset)
+
+}
+
+object Application extends Controller {
+
+    implicit val stringobjFormat = Json.format[StringObj]
+    implicit val ruleFormat = Json.format[Rule]
+    implicit val rulesetFormat = Json.format[RuleSet]
+
    def open_pdb_file(filename: String) : scala.xml.Node = {
        try {
           scala.xml.XML.loadFile(filename)
@@ -70,7 +74,7 @@ object Application extends Controller {
 
    def get_ruleset_names(filename : String) : Seq[String]  =  (open_pdb_file(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
 
-   def get_ruleset(filename : String, ruleset_name : String) : scala.xml.Node = (((open_pdb_file(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
+   def get_ruleset_xml_from_file(filename : String, ruleset_name : String) : scala.xml.Node = (((open_pdb_file(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
 
    def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
         val removeIt = new scala.xml.transform.RewriteRule {
@@ -101,7 +105,7 @@ object Application extends Controller {
    }
 
    def save_ruleset_impl(filename : String, ruleset : RuleSet): String = {
-       val xml = to_xml(ruleset)
+       val xml = RulesetConverter.ruleset_to_xml(ruleset)
        println("Saving "+ruleset.name)
        return save_ruleset_xml(filename, xml, ruleset.name)
    }
@@ -115,7 +119,11 @@ object Application extends Controller {
    ) }
 
    def ruleset(ruleset_name : String ) = Action { request => 
-      Ok( Json.toJson(map_ruleset(get_ruleset(get_xml_file_from_request(request),ruleset_name ))))
+      Ok( Json.toJson(
+            RulesetConverter.xml_to_ruleset(
+                get_ruleset_xml_from_file(get_xml_file_from_request(request),ruleset_name )
+            )
+      ))
    }
 
    def save_ruleset(ruleset_name : String) = Action(parse.json) { request =>
