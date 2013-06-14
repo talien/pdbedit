@@ -90,17 +90,23 @@ object Application extends Controller {
        scala.xml.XML.save(filename, xml, "utf-8", true)
    }
 
+   def wrap_rulesets_in_patterndb_prologue(rulesets: Seq[scala.xml.Node]) : scala.xml.Node =  { 
+<patterndb version={"4"} pub_date={ (new java.text.SimpleDateFormat("yyyy-MM-dd")).format( new java.util.Date())}> 
+{rulesets}
+</patterndb> 
+   }
+
    def save_ruleset_xml(filename : String, ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
        val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset" ++ ruleset_xml
-       save_patterndb(filename, <patterndb>{new_set}</patterndb>)
+       save_patterndb(filename, wrap_rulesets_in_patterndb_prologue(new_set))
        return "OK"
    }
 
    def remove_ruleset(filename: String, ruleset_name: String) : String = {
        val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
-       save_patterndb(filename, <patterndb>{new_set}</patterndb>)
+       save_patterndb(filename, wrap_rulesets_in_patterndb_prologue(new_set))
        return "OK"
    }
 
