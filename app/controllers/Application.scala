@@ -82,17 +82,21 @@ object Application extends Controller {
        (new scala.xml.transform.RuleTransformer(removeIt).transform(patterndb)) 
    }
 
+   def save_patterndb(filename: String, xml : scala.xml.Node) : Unit = {
+       scala.xml.XML.save(filename, xml, "utf-8", true)
+   }
+
    def save_ruleset_xml(filename : String, ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
        val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset" ++ ruleset_xml
-       scala.xml.XML.save(filename, <patterndb>{new_set}</patterndb>)
+       save_patterndb(filename, <patterndb>{new_set}</patterndb>)
        return "OK"
    }
 
    def remove_ruleset(filename: String, ruleset_name: String) : String = {
        val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
-       scala.xml.XML.save(filename, <patterndb>{new_set}</patterndb>)
+       save_patterndb(filename, <patterndb>{new_set}</patterndb>)
        return "OK"
    }
 
