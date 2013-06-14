@@ -135,15 +135,15 @@ object Application extends Controller {
    }
 
    def upload = Action(parse.multipartFormData){ request =>    
-     request.body.file("picture").map { picture =>
-      val uuid = java.util.UUID.randomUUID().toString()
-      make_session_directory(uuid)
-      picture.ref.moveTo(new File(get_xml_file_name(uuid)),true)
-      Redirect(routes.Application.index).withSession( "session" -> uuid )
-    }.getOrElse {
-        Redirect(routes.Application.start).flashing(
-      "error" -> "Missing file")
-   }  }
+         request.body.file("patterndb").map { patterndb =>
+            val uuid = java.util.UUID.randomUUID().toString()
+            make_session_directory(uuid)
+            patterndb.ref.moveTo(new File(get_xml_file_name(uuid)),true)
+            Redirect(routes.Application.index).withSession( "session" -> uuid )
+         }.getOrElse {
+            Redirect(routes.Application.start).flashing("error" -> "Missing file")
+         }  
+   }
 
    def download = Action { request =>
       Ok(scala.xml.Unparsed((new scala.xml.PrettyPrinter(120,4)).format(open_pdb_file(get_xml_file_from_request(request)))))
