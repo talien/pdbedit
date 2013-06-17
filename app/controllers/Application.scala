@@ -5,6 +5,11 @@ import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
 import java.io.File
+import javax.xml.transform.stream.StreamSource
+import javax.xml.validation.Schema
+import javax.xml.validation.SchemaFactory
+import javax.xml.validation.{Validator=>JValidator}
+import org.xml.sax.SAXException
 
 abstract class PatternDBItem
 
@@ -141,6 +146,7 @@ object Application extends Controller {
    }
 
    def get_session_directory_file(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
+
    def make_session_directory(session_id : String) : Unit = {
        val dir = get_session_directory_file(session_id)
        if (!dir.exists())
@@ -149,15 +155,34 @@ object Application extends Controller {
        }
    }
 
+   def validate_xml(filename: String) : Tuple2[Boolean,String] = {
+      try {
+          val schemaLang = "http://www.w3.org/2001/XMLSchema"
+          val factory = SchemaFactory.newInstance(schemaLang)
+          val schema = factory.newSchema(new StreamSource("data/patterndb-4.xsd"))
+          val validator = schema.newValidator()
+          validator.validate(new StreamSource(filename))
+      } catch {
+          case ex: SAXException => return (false, ex.getMessage())
+          case ex: Exception => return(false, "Unknown error")
+      }
+      (true, "")
+   }
+
    def upload = Action(parse.multipartFormData){ request =>    
          request.body.file("patterndb").map { patterndb =>
-            val uuid = java.util.UUID.randomUUID().toString()
-            make_session_directory(uuid)
-            patterndb.ref.moveTo(new File(get_xml_file_name(uuid)),true)
-            Redirect(routes.Application.index).withSession( "session" -> uuid )
+            val session_id = java.util.UUID.randomUUID().toString()
+            make_session_directory(session_id)
+            patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
+            if (patterndb.filename == "" ) Redirect(routes.Application.start).flashing("error" -> "Missing file")
+            else {
+            val (res, error_msg ) = validate_xml(get_xml_file_name(session_id))
+            if (!res) Redirect(routes.Application.start).flashing("error" -> ("Not a valid patterndb XML:"+error_msg)) else
+            Redirect(routes.Application.index).withSession( "session" -> session_id )
+            }
          }.getOrElse {
-            Redirect(routes.Application.start).flashing("error" -> "Missing file")
-         }  
+             Redirect(routes.Application.start).flashing("error" -> "Missing file")
+            }  
    }
 
    def download = Action { request =>
@@ -167,7 +192,11 @@ object Application extends Controller {
    def start = Action { request => 
      request.session.get("session") map { session =>
        Redirect(routes.Application.index) } getOrElse {
-       Ok(views.html.start.render("Hello") ) }
+       Ok(views.html.start.render("Hello",
+            request.flash.get("error") map {message =>
+              message} getOrElse {""}
+
+        ) ) }
    }
 
    def index = Action { request => 
