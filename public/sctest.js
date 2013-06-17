@@ -108,7 +108,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
     $scope.parser_select = [ {name:"QSTRING"}, {name:"ESTRING"}, {name:"STRING"}, {name:"ANYSTRING"}, {name: "DOUBLE"}, {name:"EMAIL"}, {name:"FLOAT"}, {name:"HOSTNAME"},
                              {name:"IPv4"}, {name:"IPv6"}, {name: "IPvANY"}, {name:"LLADDR"}, {name:"MACADDR"}, {name:"NUMBER"}, {name:"PCRE"}, {name:"SET"} ];
 
-    $scope.test_change = function(model, evt)
+    $scope.on_token_click = function(model, evt)
     {
         var index = parseInt(evt.target.id.split("_")[1]);
         $scope.index = index;
@@ -118,6 +118,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
         $scope.editing = true;
         $scope.selected_parser = { "name":"" };
         $scope.parser_variable = "";
+        $scope.parser_attributes = "";
         if (is_parser($scope.token.value))
         {
             populate_parser_attributes_from_token($scope, $scope.token.value);
