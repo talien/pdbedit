@@ -4,7 +4,7 @@ import play._
 import play.api.mvc._
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import java.io.File
+import java.io._
 import javax.xml.transform.stream.StreamSource
 import javax.xml.validation.Schema
 import javax.xml.validation.SchemaFactory
@@ -16,6 +16,15 @@ abstract class PatternDBItem
 case class StringObj(text: String) extends PatternDBItem
 case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
 case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
+
+object Logger {
+    def log(msg : String) : Unit = {
+         val writer = new FileWriter("logs/app.log", true)
+         val timestamp = (new java.text.SimpleDateFormat("[yyyy-MM-dd HH:mm:ss]")).format( new java.util.Date())
+         writer.write(timestamp+" "+msg+"\n")
+         writer.close()
+    }
+}
 
 object RulesetConverter {
     def xml_to_ruleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
@@ -111,13 +120,14 @@ object Application extends Controller {
    def remove_ruleset(filename: String, ruleset_name: String) : String = {
        val pdb = open_pdb_file(filename)
        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
+       Logger.log("Removing ruleset:"+ruleset_name+" from file:"+filename)
        save_patterndb(filename, wrap_rulesets_in_patterndb_prologue(new_set))
        return "OK"
    }
 
    def save_ruleset_impl(filename : String, ruleset : RuleSet): String = {
        val xml = RulesetConverter.ruleset_to_xml(ruleset)
-       println("Saving "+ruleset.name)
+       Logger.log("Saving ruleset:"+ruleset.name+" to file:"+filename)
        return save_ruleset_xml(filename, xml, ruleset.name)
    }
 
@@ -157,6 +167,7 @@ object Application extends Controller {
 
    def validate_xml(filename: String) : Tuple2[Boolean,String] = {
       try {
+          Logger.log("Validating patterndb file: "+filename)
           val schemaLang = "http://www.w3.org/2001/XMLSchema"
           val factory = SchemaFactory.newInstance(schemaLang)
           val schema = factory.newSchema(new StreamSource("data/patterndb-4.xsd"))
@@ -192,8 +203,13 @@ object Application extends Controller {
             }  
    }
 
+   def get_current_patterndb_file(filename: String) = {
+       Logger.log("Patterndb file downloaded: "+filename)
+       (new scala.xml.PrettyPrinter(120,4)).format(open_pdb_file(filename))
+   }
+
    def download = Action { request =>
-      Ok(scala.xml.Unparsed((new scala.xml.PrettyPrinter(120,4)).format(open_pdb_file(get_xml_file_from_request(request)))))
+      Ok(scala.xml.Unparsed(get_current_patterndb_file(get_xml_file_from_request(request))))
    }
 
    def start = Action { request => 
@@ -214,6 +230,7 @@ object Application extends Controller {
     }
 
    def cleanup_session_directory(session_id: String) : Unit = {
+      Logger.log("Cleaning up session "+session_id)
       val dir = get_session_directory_file(session_id)
       dir.listFiles.foreach( file => file.delete)
       dir.delete
@@ -230,6 +247,7 @@ object Application extends Controller {
    def new_file = Action {
       val session_id = init_session
       save_empty_patterndb(session_id)
+      Logger.log("New file created in session "+session_id)
       Redirect(routes.Application.index).withSession( "session" -> session_id )
    }
  
