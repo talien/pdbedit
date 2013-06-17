@@ -1,0 +1,17 @@
+-@ var msg : String = ""
+
+!!! 5
+html
+  head
+    title PDB Editor
+    link(href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet")
+    link(href="assets/css/flat-ui.css" rel="stylesheet")
+  body
+    .container
+      h1.title.text-center Welcome!
+      p
+        form(action="/upload" method="POST" enctype="multipart/form-data")
+          input.btn-file.bint-large(type="file" name="patterndb")
+          input.btn.btn-primary.btn-large(type="submit" value="Upload file")
+        a.btn.btn-success.btn-large(href="/new") Create new
+      p.text-error=  msg

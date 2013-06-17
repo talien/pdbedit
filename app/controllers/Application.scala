@@ -215,16 +215,15 @@ object Application extends Controller {
    def start = Action { request => 
      request.session.get("session") map { session =>
        Redirect(routes.Application.index) } getOrElse {
-       Ok(views.html.start.render("Hello",
-            request.flash.get("error") map {message =>
-              message} getOrElse {""}
-
+       Ok(Scalate("start.jade").render('msg -> 
+            (request.flash.get("error") map {message =>
+              message} getOrElse {""})
         ) ) }
    }
 
    def index = Action { request => 
       request.session.get("session") map { session =>
-       Ok(views.html.main.render("Hello")) } getOrElse {
+       Ok(Scalate("main.jade").render()) } getOrElse {
          Redirect(routes.Application.start)
        }
     }

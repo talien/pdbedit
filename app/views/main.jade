@@ -1,0 +1,143 @@
+!!! 5
+html(ng-app="sctest")
+  head
+    <!--<script src="assets/angular.min.js"></script>-->
+    script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js")
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>-->
+    script(src="http://code.angularjs.org/1.1.5/angular.min.js")
+    <!-- <link href="assets/css/bootstrap.css" rel="stylesheet">-->
+    script(src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.3.0.js")
+    link(href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet")
+    link(href="assets/css/flat-ui.css" rel="stylesheet")
+    <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
+    script(src="assets/util.js")
+    script(src="assets/ruleseteditor.js")
+    script(src="assets/patternparsers.js")
+    script(src="assets/sctest.js")
+    link(href="assets/my.css" rel="stylesheet")
+  body
+    h1 Rulesets
+    div(ng-controller="scload")
+      .header.text-right
+        = render("link.jade", Map( "href" -> "/logout", "icon_class" -> "icon-home", "caption" -> "Logout" ) )
+        = render("link.jade", Map( "href" -> "/download", "icon_class" -> "icon-download", "caption" -> "Download" ) )
+      .bs-docs-sidebar.span3
+        ul.nav.nav-list.bs-docs-sidenav
+          li(ng-repeat="name in ruleset_names")
+            a(href="#" ng-click="ruleset_editor.load_ruleset(name)") {{name}}
+        = render("button-add.jade", Map( "click" -> "on_add_ruleset()", "caption" -> "Add ruleset"))
+      .container.span12(ng-show="ruleset_editor.ruleset_show")
+        h3 {{ruleset_editor.ruleset.name}}
+        ng-switch(on="ruleset_editor.is_editing")
+          div(ng-switch-when="true")
+            ul
+              li(ng-repeat="pattern in ruleset_editor.ruleset.patterns")
+                input(ng-model="pattern.text")
+                a.btn.btn-danger(href="#" ng-click="remove_object(ruleset_editor.ruleset.patterns, pattern)")
+                  i.icon-minus-sign
+            = render("button-add.jade", Map( "click" -> "add_string_object(ruleset_editor.ruleset.patterns)", "caption" -> "Add pattern"))
+            a.btn.btn-success(href="#" ng-click="ruleset_editor.set()")
+              i.icon-ok-circle
+              | Save ruleset patterns
+          div(ng-switch-default)
+            div(ng-repeat="pattern in ruleset_editor.ruleset.patterns") {{pattern.text}}
+            a.btn.btn-warning(href="#" ng-click="ruleset_editor.edit()")
+              i.icon-edit
+              | Edit ruleset patterns
+        h3 Rules:
+        = render("button-add.jade", Map( "click" -> "ruleset_editor.add_rule()", "caption" -> "Add rule"))
+        accordion(close-others="true")
+          accordion-group.span11(ng-repeat="rule in ruleset_editor.ruleset.rules")
+            accordion-heading  {{rule.id}}
+            ng-switch(on="ruleset_editor.is_rule_editing")
+              <!-- Editing rule content-->
+              div(ng-switch-when="true")
+                | Provider: 
+                input(ng-model="rule.provider")
+                | Class:
+                input(ng-model="rule.rule_class")
+                <!-- TODO: select -->
+                table
+                  tr(ng-repeat="pattern in rule.patterns")
+                    td
+                      input.row.span9(ng-model="pattern.text")
+                      a.btn.btn-danger(href="#" ng-click="remove_object(rule.patterns, pattern)")
+                        i.icon-minus-sign
+                      a.btn.btn-warning(href="#" ng-click="openEditor(pattern)") 
+                        i.icon-edit 
+                        | Use editor
+                = render("button-add.jade", Map( "click" -> "add_string_object(rule.patterns)", "caption" -> "Add pattern"))
+                h4 Tags:
+                ul
+                  li(ng-repeat="rule_tag in rule.tags")
+                    input(ng-model="rule_tag.text")
+                    a.btn.btn-danger(href="#" ng-click="remove_object(rule.tags, rule_tag)")
+                      i.icon-minus-sign
+                = render("button-add.jade", Map( "click" -> "add_string_object(rule.tags)", "caption" -> "Add tag"))
+                a.btn.btn-success(href="#" ng-click="ruleset_editor.set_rule()")
+                  i.icon-ok-circle
+                  | Save rule
+                <!--End Editing rule content -->
+
+              div(ng-switch-default)
+                h3 Provider: {{rule.provider}} Class: {{rule.rule_class}}
+                h4 Patterns:
+                table.table
+                  tr(ng-repeat="pattern in rule.patterns")
+                    td {{pattern.text}}
+                h4 Tags:
+                ul
+                  li(ng-repeat="tag in rule.tags")  {{tag.text}}
+                a.btn.btn-warning(href="#" ng-click="ruleset_editor.edit_rule()") 
+                  i.icon-edit
+                  | Edit rule
+                a.btn.btn-danger(href="#" ng-click="remove_object(ruleset_editor.ruleset.rules, rule)")
+                  i.icon-minus-sign 
+                  | Remove rule
+          .row.span9
+            a.btn.btn-success(href="#" ng-click="ruleset_editor.save_ruleset()") 
+              i.icon-share
+              | Commit ruleset
+            a.btn.btn-danger(href="#" ng-click="ruleset_editor.delete_ruleset(refresh_name_list)")
+              i.icon-minus-sign
+              | Delete ruleset
+        div(modal="is_pattern_editor_open" close="cancelEditor()" options="modal_opts")
+          .modal-header
+            h4 Original pattern: {{ editing_pattern.text}}
+          .modal-body
+            h3.panel-title Paste a log line here:
+            .row
+              .span12
+                input.span12(type="text" log-line ng-model="logelements")
+            h3.panel-title(ng-show="show_click_on_tokens") Click on tokens to edit them:
+            .row
+              .span(ng-repeat="i in logelements")
+                a.btn(href="#" ng-class="{ 'delimiter' : 'disabled', 'token':'btn-primary', 'parser':'btn-info'}[i.type]" ng-click="on_token_click(logelements, $event)" id="token_{{i.index}}") {{to_html(i.value)}}
+
+            .span12.row(ng-show="editing")
+              .span6
+                h3.panel-title.span3 Edit token attributes
+                .row
+                  h4.span6 {{token.value}} -> @@{{selected_parser.name}}:{{parser_variable}}:{{parser_attributes}}@@
+                .row
+                  h4.span3 Parser type:
+                  select.span3(name="parser_select" ng-model="selected_parser" ng-options="parser.name for parser in parser_select")
+                    option (value="")  -- choose parser --
+                .row
+                  h4.span3 Parser variable name:
+                  input.span3(type="text" ng-model="parser_variable")
+                .row
+                  h4.span3 Parser attributes:
+                  input.span3(type="text" ng-model="parser_attributes" ng-trim="false")
+                a.btn.btn-success(href="#" ng-click="save_item()") Set parser
+                a.btn.btn-warning(href="#" ng-click="cancel_item()") Cancel token edit
+              .span5
+                | {{selected_parser.help}}
+            
+          .modal-footer
+            button.btn.btn-warning(ng-click="cancelEditor()")
+              i.icon-remove-circle
+              | Cancel
+            button.btn.btn-success(ng-click="saveEditor()") 
+              i.icon-ok-circle
+              | Save
