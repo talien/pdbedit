@@ -13,6 +13,7 @@
    <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
    <script src="assets/util.js"></script>
    <script src="assets/ruleseteditor.js"></script>
+   <script src="assets/patternparsers.js"></script>
    <script src="assets/sctest.js"></script>
    <link href="assets/my.css" rel="stylesheet">
  </head>
@@ -134,28 +135,33 @@
           <a href="#" class="btn" ng-class="{ 'delimiter' : 'disabled', 'token':'btn-primary', 'parser':'btn-info'}[i.type]" ng-click="on_token_click(logelements, $event)" id="token_{{i.index}}">{{to_html(i.value)}}</a>
         </div>
        </div>
-       <div ng-show="editing" class="span6">
-        <h3 class="panel-title">Edit token attributes</h3>
+       <div ng-show="editing" class="span12 row">
+         <div class="span6">
+          <h3 class="panel-title span3">Edit token attributes</h3>
           <div class="row">
-          <h4 class="span6"> {{token.value}} -> @@{{selected_parser.name}}:{{parser_variable}}:{{parser_attributes}}@@ </h4>
-         </div>
-         <div class="row">
-          <h4 class="span3"> Parser type:</h4>
-          <select name="parser_select" ng-model="selected_parser" ng-options="parser.name for parser in parser_select" class="span3">
+            <h4 class="span6"> {{token.value}} -> @@{{selected_parser.name}}:{{parser_variable}}:{{parser_attributes}}@@ </h4>
+          </div>
+          <div class="row">
+           <h4 class="span3"> Parser type:</h4>
+           <select name="parser_select" ng-model="selected_parser" ng-options="parser.name for parser in parser_select" class="span3">
             <option value="">-- choose parser --</option>
-          </select>
-         </div>
-         <div class="row">
-          <h4 class="span3"> Parser variable name:</h4>
-          <input type="text" ng-model="parser_variable" class="span3"/>
-         </div>
-         <div class="row">
-          <h4 class="span3"> Parser attributes:</h4>
-          <input type="text" ng-model="parser_attributes" ng-trim="false" class="span3"/>
-         </div>
-        <a href="#" class="btn btn-success" ng-click="save_item()">Set parser</a>
-        <a href="#" class="btn btn-warning" ng-click="cancel_item()">Cancel token edit</a>
-       </div>
+           </select>
+          </div>
+          <div class="row">
+           <h4 class="span3"> Parser variable name:</h4>
+           <input type="text" ng-model="parser_variable" class="span3"/>
+          </div>
+          <div class="row">
+           <h4 class="span3"> Parser attributes:</h4>
+           <input type="text" ng-model="parser_attributes" ng-trim="false" class="span3"/>
+          </div>
+         <a href="#" class="btn btn-success" ng-click="save_item()">Set parser</a>
+         <a href="#" class="btn btn-warning" ng-click="cancel_item()">Cancel token edit</a>
+        </div>
+          <div class="span5">
+            {{selected_parser.help}}
+          </div>
+        </div>
         </div>
         <div class="modal-footer">
             <button class="btn btn-warning cancel" ng-click="cancelEditor()"><i class="icon-remove-circle"></i>Cancel</button>

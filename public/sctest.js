@@ -105,8 +105,7 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
       dialogClass : "modal container span13"
    };
 
-    $scope.parser_select = [ {name:"QSTRING"}, {name:"ESTRING"}, {name:"STRING"}, {name:"ANYSTRING"}, {name: "DOUBLE"}, {name:"EMAIL"}, {name:"FLOAT"}, {name:"HOSTNAME"},
-                             {name:"IPv4"}, {name:"IPv6"}, {name: "IPvANY"}, {name:"LLADDR"}, {name:"MACADDR"}, {name:"NUMBER"}, {name:"PCRE"}, {name:"SET"} ];
+    $scope.parser_select = patterndb_parsers
 
     $scope.on_token_click = function(model, evt)
     {
