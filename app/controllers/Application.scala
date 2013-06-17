@@ -140,8 +140,9 @@ object Application extends Controller {
       Ok(remove_ruleset(get_xml_file_from_request(request), ruleset_name))
    }
 
+   def get_session_directory_file(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
    def make_session_directory(session_id : String) : Unit = {
-       val dir = new File("/tmp/pdbedit/" + session_id)
+       val dir = get_session_directory_file(session_id)
        if (!dir.exists())
        {
            dir.mkdirs();  
@@ -176,6 +177,19 @@ object Application extends Controller {
        }
     }
 
-   def logout = Action { Redirect(routes.Application.start).withNewSession }
+   def cleanup_session_directory(session_id: String) : Unit = {
+      val dir = get_session_directory_file(session_id)
+      dir.listFiles.foreach( file => file.delete)
+      dir.delete
+   }
+
+   def logout = Action { request => 
+      request.session.get("session") map { 
+          session => cleanup_session_directory(session) 
+          Redirect(routes.Application.start).withNewSession
+      } getOrElse {
+        Redirect(routes.Application.start).withNewSession 
+      }
+   }
  
-}
+ }
