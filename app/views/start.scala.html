@@ -7,12 +7,15 @@
 <body>
 <div class="container">
 <h1 class="title text-center">Welcome!</h1>
+    <p>
 @helper.form(action = routes.Application.upload, 'enctype -> "multipart/form-data") {
     
     <input type="file" name="patterndb" class="input btn-file btn-large">
     
+        <input type="submit" class="btn btn-primary btn-large" value="Upload file">
+    </p>
     <p>
-        <input type="submit" class="btn" value="Upload file">
+       <a href="/new" class="btn-success btn btn-large">Create new</a>
     </p>
     
 }

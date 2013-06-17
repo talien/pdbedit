@@ -169,16 +169,23 @@ object Application extends Controller {
       (true, "")
    }
 
+   def init_session = {
+      val session_id = java.util.UUID.randomUUID().toString()
+      make_session_directory(session_id)
+      session_id
+   }
+
    def upload = Action(parse.multipartFormData){ request =>    
          request.body.file("patterndb").map { patterndb =>
-            val session_id = java.util.UUID.randomUUID().toString()
-            make_session_directory(session_id)
+            val session_id = init_session
             patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
             if (patterndb.filename == "" ) Redirect(routes.Application.start).flashing("error" -> "Missing file")
             else {
-            val (res, error_msg ) = validate_xml(get_xml_file_name(session_id))
-            if (!res) Redirect(routes.Application.start).flashing("error" -> ("Not a valid patterndb XML:"+error_msg)) else
-            Redirect(routes.Application.index).withSession( "session" -> session_id )
+                val (res, error_msg ) = validate_xml(get_xml_file_name(session_id))
+                if (!res) 
+                    Redirect(routes.Application.start).flashing("error" -> ("Not a valid patterndb XML:"+error_msg)) 
+                else
+                    Redirect(routes.Application.index).withSession( "session" -> session_id )
             }
          }.getOrElse {
              Redirect(routes.Application.start).flashing("error" -> "Missing file")
@@ -214,11 +221,16 @@ object Application extends Controller {
 
    def logout = Action { request => 
       request.session.get("session") map { 
-          session => cleanup_session_directory(session) 
-          Redirect(routes.Application.start).withNewSession
-      } getOrElse {
-        Redirect(routes.Application.start).withNewSession 
-      }
+          session => cleanup_session_directory(session) }
+      Redirect(routes.Application.start).withNewSession
+   }
+
+   def save_empty_patterndb(session_id : String) = save_patterndb(get_xml_file_name(session_id),wrap_rulesets_in_patterndb_prologue(Seq()))
+
+   def new_file = Action {
+      val session_id = init_session
+      save_empty_patterndb(session_id)
+      Redirect(routes.Application.index).withSession( "session" -> session_id )
    }
  
  }
