@@ -13,6 +13,60 @@ create_empty_ruleset = function(ruleset_name)
  return ruleset;
 }
 
+scmodule.directive('onEnter', function() {
+        return function(scope, element, attrs) {
+            element.bind("keydown keypress", function(event) {
+                if(event.which === 13) {
+                    scope.$apply(function(){
+                        scope.$eval(attrs.onEnter);
+                    });
+
+                    event.preventDefault();
+                }
+            });
+        };
+    });
+
+scmodule.controller("search", function($scope, $http) {
+   $scope.from = 0;
+   $scope.loading = false;
+   $scope.query = "";
+
+   $scope.getmessages = function() {
+       $scope.loading = true;
+       $http.post("/elastictest/"+ $scope.from, { 'query':$scope.query }, { headers: { 'Content-Type':'application/json' } } ).then(function(res){
+           $scope.messages = res.data;
+           $scope.loading = false;
+       })
+   }
+
+   $scope.next = function()
+   {
+       $scope.from = $scope.from + 50;
+       $scope.getmessages();
+   }
+
+   $scope.prev = function()
+   {
+       if (($scope.from - 50) < 0)
+       {
+          $scope.from = 0;
+          $scope.getmessages();
+       }
+       else
+       {
+          $scope.from = $scope.from - 50;
+          $scope.getmessages();
+       }
+   }
+
+   $scope.set_message = function(message) 
+   {
+      $scope.display_message = message
+   }
+
+   $scope.getmessages();
+});
 
 scmodule.controller("scload", function($scope, $http, $dialog) {
    var add_ruleset_dialog_template = '<div class="modal-header">'+

@@ -10,6 +10,13 @@ import javax.xml.validation.Schema
 import javax.xml.validation.SchemaFactory
 import javax.xml.validation.{Validator=>JValidator}
 import org.xml.sax.SAXException
+import org.elasticsearch.action.search.SearchResponse
+import org.elasticsearch.action.search.SearchType
+import org.elasticsearch.index.query.FilterBuilders._
+import org.elasticsearch.index.query.QueryBuilders._
+import org.elasticsearch.node.NodeBuilder._
+import collection.JavaConversions._
+import org.elasticsearch.common.unit._
 
 abstract class PatternDBItem
 
@@ -248,6 +255,80 @@ object Application extends Controller {
       save_empty_patterndb(session_id)
       Logger.log("New file created in session "+session_id)
       Redirect(routes.Application.index).withSession( "session" -> session_id )
+   }
+
+   def searchmain = Action {
+      Ok(Scalate("search.jade").render())
+   }
+
+/*   def get_scroll_id_for_search() = {
+      val node = nodeBuilder().node();
+      val client = node.client();
+      val scrollResp = client.prepareSearch("test")
+        .setSearchType(SearchType.SCAN)
+        .setScroll(new TimeValue(60000))
+        .setSize(50).execute().actionGet()
+      val res = scrollResp.getScrollId()
+      node.close()
+      res
+   }
+
+   def get_values_from_scroll(scroll_id: String, from: Int) = {
+       val node = nodeBuilder().node();
+       val client = node.client();
+       val response = client.prepareSearchScroll(scroll_id).setScroll(new TimeValue(600000)).execute().actionGet();
+       val res = response.getHits().slice(0,50).map ( hit => {
+          hit.getFields().foreach {
+              field => println(field._1)
+          }
+          //println(hit.sourceAsString())
+          Json.parse(hit.sourceAsString())
+       })
+       node.close()
+       Json.toJson(res)
+   }
+
+   def elastictest(from: Int) = Action {
+      request => request.session.get("scroll_id") map {
+        scroll_id => 
+        {
+          println("Got scrollid:" + scroll_id)
+          Ok(get_values_from_scroll(scroll_id, from))
+        }
+      } getOrElse { 
+         val scrollid = get_scroll_id_for_search()
+         Ok(get_values_from_scroll(scrollid, from)).withSession("scroll_id" -> scrollid)
+      }
+   }*/
+
+   def build_and_get_query(query: String) = {
+       if (query == "")
+          matchAllQuery()
+       else
+          matchQuery("_all",query)
+   }
+
+   def elastictest(from: Int) = Action(parse.json) {
+     request => {
+      val query = (request.body \ "query").as[String]
+      println(query)
+      val node = nodeBuilder().node();
+      val client = node.client();
+      val qb = build_and_get_query(query)
+      val response = client.prepareSearch("test").setFrom(from).setQuery(qb).setSize(50).execute().actionGet();
+      println(response.getHits().totalHits())
+      val res = response.getHits().slice(0,50).map ( hit => {
+          hit.getFields().foreach {
+              field => println(field._1)
+          }
+          //println(hit.sourceAsString())
+          Json.parse(hit.sourceAsString())
+      }
+      )
+      node.close();
+      Ok(Json.toJson(res))
+     }
+
    }
  
  }

@@ -1,0 +1,34 @@
+!!! 5
+html(ng-app="sctest")
+  head
+    <!--<script src="assets/angular.min.js"></script>-->
+    script(src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js")
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>-->
+    script(src="http://code.angularjs.org/1.1.5/angular.min.js")
+    <!-- <link href="assets/css/bootstrap.css" rel="stylesheet">-->
+    script(src="http://angular-ui.github.io/bootstrap/ui-bootstrap-tpls-0.3.0.js")
+    link(href="http://netdna.bootstrapcdn.com/twitter-bootstrap/2.3.1/css/bootstrap-combined.min.css" rel="stylesheet")
+    link(href="assets/css/flat-ui.css" rel="stylesheet")
+    <!--<script src="assets/ui-bootstrap-custom-0.4.0-SNAPSHOT.js"></script>-->
+    script(src="assets/util.js")
+    script(src="assets/ruleseteditor.js")
+    script(src="assets/patternparsers.js")
+    script(src="assets/sctest.js")
+    link(href="assets/my.css" rel="stylesheet")
+  body 
+    h1 Test
+    div(ng-controller="search")
+      h3 {{display_message}}
+      input(type="text" ng-model="query" on-enter="getmessages()")
+      h3 Messages: {{from}} .. {{from+50}}
+      span.row
+        a.btn.btn-primary(href="#" ng-click="prev()") Prev
+        a.btn.btn-primary(href="#" ng-click="next()") Next
+      div(ng-show="loading") Loading
+      table.table 
+        tr(ng-repeat="message in messages")
+          td {{message['@timestamp']}}
+          td {{message.PROGRAM}}
+          td {{message.HOST}}
+          td(ng-click="set_message(message.MESSAGE)") {{message.MESSAGE}}
+
