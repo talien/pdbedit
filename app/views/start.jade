@@ -13,5 +13,5 @@ html
         form(action="/upload" method="POST" enctype="multipart/form-data")
           input.btn-file.bint-large(type="file" name="patterndb")
           input.btn.btn-primary.btn-large(type="submit" value="Upload file")
-        a.btn.btn-success.btn-large(href="/new") Create new
+        a#create_new.btn.btn-success.btn-large(href="/new") Create new
       p.text-error=  msg

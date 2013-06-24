@@ -37,8 +37,15 @@ object RulesetConverter {
     def xml_to_ruleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
-        (ruleset \ "pattern") map ( pattern =>
-            StringObj(pattern.text) ),
+        { 
+          lazy val v3_patterns = (ruleset \ "pattern") map ( pattern => StringObj(pattern.text) )
+          lazy val v4_patterns = (ruleset \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) )
+          if (v3_patterns  == Seq())
+              v4_patterns
+             else
+              v3_patterns
+        }
+        ,
         (ruleset \ "rules" \ "rule") map ( rule =>
             Rule(
                   (rule \ "@id").toString(),
