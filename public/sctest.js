@@ -88,6 +88,8 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
     controller: 'AddRulesetDialogController',
     dialogClass: 'modal span7',
    };
+   
+   $scope.is_search_active = true;
 
    $scope.ruleset_names = [] // meh, it's the ruleset name list, rename it ASAP
 

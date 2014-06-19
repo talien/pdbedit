@@ -105,6 +105,9 @@ html(ng-app="sctest")
           .modal-header
             h4 Original pattern: {{ editing_pattern.text}}
           .modal-body
+            //- a.btn.btn-primary(ng-click="is_search_active = !is_search_active") Search
+            //- div(collapse="!is_search_active")
+            //-   = render("search_widget.jade",Map())
             h3.panel-title Paste a log line here:
             .row
               .span12

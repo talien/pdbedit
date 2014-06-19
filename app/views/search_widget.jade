@@ -1,0 +1,15 @@
+div(ng-controller="search")
+  h3 {{display_message}}
+  input(type="text" ng-model="query" on-enter="getmessages()")
+  h3 Messages: {{from}} .. {{from+50}}
+  span.row
+    a.btn.btn-primary(href="#" ng-click="prev()") Prev
+    a.btn.btn-primary(href="#" ng-click="next()") Next
+  div(ng-show="loading") Loading
+  table.table 
+    tr(ng-repeat="message in messages")
+      td {{message['@timestamp']}}
+      td {{message.PROGRAM}}
+      td {{message.HOST}}
+      td(ng-click="set_message(message.MESSAGE)") {{message.MESSAGE}}
+
