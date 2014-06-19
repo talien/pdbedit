@@ -62,7 +62,9 @@ scmodule.controller("search", function($scope, $http) {
 
    $scope.set_message = function(message) 
    {
-      $scope.display_message = message
+      $scope.display_message = message;
+      $scope.$parent.editing_pattern.text = message;
+      $scope.$parent.generate_logelements();
    }
 
    $scope.getmessages();
@@ -136,11 +138,16 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
      remove_from_array(rule, rules);
    }
 
+   $scope.generate_logelements = function()
+   {
+     $scope.logelements = tokenize($scope.editing_pattern.text);
+   }
+
    $scope.openEditor = function (pattern)
    {
-     $scope.editing_pattern = pattern;
      $scope.is_pattern_editor_open = true;
-     $scope.logelements = tokenize($scope.editing_pattern.text);
+     $scope.editing_pattern = pattern;
+     $scope.generate_logelements();
    }
 
    $scope.cancelEditor = function ()
