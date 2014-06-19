@@ -40,9 +40,12 @@ class PDBTest extends Specification {
 
        }
    }
+}
+
+class EndToEnd extends Specification {
 
    "Start page" should {
-     "should redirect when clicked on Create new" in {
+     "redirect when clicked on Create new" in {
        running(TestServer(3333), HTMLUNIT) { browser =>
           browser.goTo("http://localhost:3333")
           browser.$("#create_new").click()
