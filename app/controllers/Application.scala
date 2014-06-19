@@ -86,87 +86,112 @@ object RulesetConverter {
 
 }
 
+object PatternDB {
+    def open(filename: String) : scala.xml.Node = {
+        try {
+            scala.xml.XML.loadFile(filename)
+        } catch {
+            case e:org.xml.sax.SAXParseException => <patterndb></patterndb>
+        }
+    }
+
+    def save(filename: String, xml : scala.xml.Node) : Unit =
+            scala.xml.XML.save(filename, xml, "utf-8", true)
+
+    def get_ruleset_names(filename : String) : Seq[String]  =  (open(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
+
+    def get_ruleset(filename : String, ruleset_name : String) : scala.xml.Node = 
+            (((open(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
+
+
+    def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
+        val removeIt = new scala.xml.transform.RewriteRule {
+            override def transform(n: scala.xml.Node): scala.xml.NodeSeq = n match {
+              case e: scala.xml.Elem if (e \ "@name").text == ruleset_name => scala.xml.NodeSeq.Empty
+              case n => n
+            }
+        }
+        (new scala.xml.transform.RuleTransformer(removeIt).transform(patterndb)) 
+    }
+
+    def remove_ruleset(filename: String, ruleset_name: String) : String = {
+        val pdb = open(filename)
+        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
+        Logger.log("Removing ruleset:"+ruleset_name+" from file:"+filename)
+        save(filename, wrap_rulesets_in_patterndb_prologue(new_set))
+        return "OK"
+    }
+
+    def save_ruleset_xml(filename : String, ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
+        val pdb = open(filename)
+        val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset" ++ ruleset_xml
+        save(filename, wrap_rulesets_in_patterndb_prologue(new_set))
+        return "OK"
+    }
+
+
+    def save_ruleset(filename : String, ruleset : RuleSet): String = {
+        val xml = RulesetConverter.ruleset_to_xml(ruleset)
+        Logger.log("Saving ruleset:"+ruleset.name+" to file:"+filename)
+        return save_ruleset_xml(filename, xml, ruleset.name)
+    }
+
+    def wrap_rulesets_in_patterndb_prologue(rulesets: Seq[scala.xml.Node]) : scala.xml.Node =  { 
+<patterndb version={"4"} pub_date={ (new java.text.SimpleDateFormat("yyyy-MM-dd")).format( new java.util.Date())}> 
+{rulesets}
+</patterndb> 
+    }
+
+    def validate(filename: String) : Tuple2[Boolean,String] = {
+       try {
+           Logger.log("Validating patterndb file: "+filename)
+           val schemaLang = "http://www.w3.org/2001/XMLSchema"
+           val factory = SchemaFactory.newInstance(schemaLang)
+           val schema = factory.newSchema(new StreamSource("data/patterndb-4.xsd"))
+           val validator = schema.newValidator()
+           validator.validate(new StreamSource(filename))
+       } catch {
+           case ex: SAXException => return (false, ex.getMessage())
+           case ex: Exception => return(false, "Unknown error")
+       }
+       (true, "")
+   }
+
+   def pretty_print(filename: String) = (new scala.xml.PrettyPrinter(120,4)).format(open(filename))
+
+   def create_empty(filename : String) = save(filename,wrap_rulesets_in_patterndb_prologue(Seq()))
+
+}
+
 object Application extends Controller {
 
     implicit val stringobjFormat = Json.format[StringObj]
     implicit val ruleFormat = Json.format[Rule]
     implicit val rulesetFormat = Json.format[RuleSet]
 
-   def open_pdb_file(filename: String) : scala.xml.Node = {
-       try {
-          scala.xml.XML.loadFile(filename)
-       } catch {
-           case e:org.xml.sax.SAXParseException => <patterndb></patterndb>
-       }
-   }
-
-   def get_ruleset_names(filename : String) : Seq[String]  =  (open_pdb_file(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
-
-   def get_ruleset_xml_from_file(filename : String, ruleset_name : String) : scala.xml.Node = (((open_pdb_file(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
-
-   def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
-        val removeIt = new scala.xml.transform.RewriteRule {
-          override def transform(n: scala.xml.Node): scala.xml.NodeSeq = n match {
-              case e: scala.xml.Elem if (e \ "@name").text == ruleset_name => scala.xml.NodeSeq.Empty
-              case n => n
-            }
-       }
-       (new scala.xml.transform.RuleTransformer(removeIt).transform(patterndb)) 
-   }
-
-   def save_patterndb(filename: String, xml : scala.xml.Node) : Unit = {
-       scala.xml.XML.save(filename, xml, "utf-8", true)
-   }
-
-   def wrap_rulesets_in_patterndb_prologue(rulesets: Seq[scala.xml.Node]) : scala.xml.Node =  { 
-<patterndb version={"4"} pub_date={ (new java.text.SimpleDateFormat("yyyy-MM-dd")).format( new java.util.Date())}> 
-{rulesets}
-</patterndb> 
-   }
-
-   def save_ruleset_xml(filename : String, ruleset_xml : scala.xml.Node, ruleset_name : String) : String = {
-       val pdb = open_pdb_file(filename)
-       val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset" ++ ruleset_xml
-       save_patterndb(filename, wrap_rulesets_in_patterndb_prologue(new_set))
-       return "OK"
-   }
-
-   def remove_ruleset(filename: String, ruleset_name: String) : String = {
-       val pdb = open_pdb_file(filename)
-       val new_set = remove_ruleset_from_xml(pdb, ruleset_name) \ "ruleset"
-       Logger.log("Removing ruleset:"+ruleset_name+" from file:"+filename)
-       save_patterndb(filename, wrap_rulesets_in_patterndb_prologue(new_set))
-       return "OK"
-   }
-
-   def save_ruleset_impl(filename : String, ruleset : RuleSet): String = {
-       val xml = RulesetConverter.ruleset_to_xml(ruleset)
-       Logger.log("Saving ruleset:"+ruleset.name+" to file:"+filename)
-       return save_ruleset_xml(filename, xml, ruleset.name)
-   }
 
    def get_xml_file_name(session_id: String) : String = "/tmp/pdbedit/" + session_id + "/pdb.xml"
 
    def get_xml_file_from_request (request : Request[_]) : String = get_xml_file_name(request.session.get("session" ).get) 
 
    def namelist = Action { request => Ok(
-       Json.toJson(get_ruleset_names(get_xml_file_from_request(request))) 
+       Json.toJson(PatternDB.get_ruleset_names(get_xml_file_from_request(request))) 
    ) }
 
    def ruleset(ruleset_name : String ) = Action { request => 
       Ok( Json.toJson(
             RulesetConverter.xml_to_ruleset(
-                get_ruleset_xml_from_file(get_xml_file_from_request(request),ruleset_name )
+                PatternDB.get_ruleset(get_xml_file_from_request(request),ruleset_name )
             )
       ))
    }
 
    def save_ruleset(ruleset_name : String) = Action(parse.json) { request =>
-      Ok(save_ruleset_impl(get_xml_file_from_request(request) , request.body.asOpt[RuleSet].get))
+      Ok(PatternDB.save_ruleset(get_xml_file_from_request(request) , request.body.asOpt[RuleSet].get))
    }
 
    def delete_ruleset(ruleset_name: String) = Action { request =>
-      Ok(remove_ruleset(get_xml_file_from_request(request), ruleset_name))
+      Ok(PatternDB.remove_ruleset(get_xml_file_from_request(request), ruleset_name))
    }
 
    def get_session_directory_file(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
@@ -179,20 +204,6 @@ object Application extends Controller {
        }
    }
 
-   def validate_xml(filename: String) : Tuple2[Boolean,String] = {
-      try {
-          Logger.log("Validating patterndb file: "+filename)
-          val schemaLang = "http://www.w3.org/2001/XMLSchema"
-          val factory = SchemaFactory.newInstance(schemaLang)
-          val schema = factory.newSchema(new StreamSource("data/patterndb-4.xsd"))
-          val validator = schema.newValidator()
-          validator.validate(new StreamSource(filename))
-      } catch {
-          case ex: SAXException => return (false, ex.getMessage())
-          case ex: Exception => return(false, "Unknown error")
-      }
-      (true, "")
-   }
 
    def init_session = {
       val session_id = java.util.UUID.randomUUID().toString()
@@ -206,7 +217,7 @@ object Application extends Controller {
             patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
             if (patterndb.filename == "" ) Redirect(routes.Application.start).flashing("error" -> "Missing file")
             else {
-                val (res, error_msg ) = validate_xml(get_xml_file_name(session_id))
+                val (res, error_msg ) = PatternDB.validate(get_xml_file_name(session_id))
                 if (!res) 
                     Redirect(routes.Application.start).flashing("error" -> ("Not a valid patterndb XML:"+error_msg)) 
                 else
@@ -217,9 +228,9 @@ object Application extends Controller {
             }  
    }
 
-   def get_current_patterndb_file(filename: String) = {
+   def get_current_patterndb_file(filename: String) : String = {
        Logger.log("Patterndb file downloaded: "+filename)
-       (new scala.xml.PrettyPrinter(120,4)).format(open_pdb_file(filename))
+       return PatternDB.pretty_print(filename)
    }
 
    def download = Action { request =>
@@ -255,11 +266,10 @@ object Application extends Controller {
       Redirect(routes.Application.start).withNewSession
    }
 
-   def save_empty_patterndb(session_id : String) = save_patterndb(get_xml_file_name(session_id),wrap_rulesets_in_patterndb_prologue(Seq()))
-
    def new_file = Action {
       val session_id = init_session
-      save_empty_patterndb(session_id)
+      PatternDB.create_empty(get_xml_file_name(session_id))
+
       Logger.log("New file created in session "+session_id)
       Redirect(routes.Application.index).withSession( "session" -> session_id )
    }
