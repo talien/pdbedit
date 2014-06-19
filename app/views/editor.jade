@@ -1,0 +1,42 @@
+div(modal="is_pattern_editor_open" close="cancelEditor()" options="modal_opts")
+  .modal-header
+    h4 Original pattern: {{ editing_pattern.text}}
+  .modal-body
+    //- a.btn.btn-primary(ng-click="is_search_active = !is_search_active") Search
+    //- div(collapse="!is_search_active")
+    //-   = render("search_widget.jade",Map())
+    h3.panel-title Paste a log line here:
+    .row
+      .span12
+        input.span12(type="text" log-line ng-model="logelements")
+    h3.panel-title(ng-show="show_click_on_tokens") Click on tokens to edit them:
+    .row
+      .span(ng-repeat="i in logelements")
+        a.btn(href="#" ng-class="{ 'delimiter' : 'disabled', 'token':'btn-primary', 'parser':'btn-info'}[i.type]" ng-click="on_token_click(logelements, $event)" id="token_{{i.index}}") {{to_html(i.value)}}
+
+    .span12.row(ng-show="editing")
+      .span6
+        h3.panel-title.span3 Edit token attributes
+        .row
+          h4.span6 {{token.value}} -> @@{{selected_parser.name}}:{{parser_variable}}:{{parser_attributes}}@@
+        .row
+          h4.span3 Parser type:
+          select.span3(name="parser_select" ng-model="selected_parser" ng-options="parser.name for parser in parser_select")
+            option (value="")  -- choose parser --
+        .row
+          h4.span3 Parser variable name:
+          input.span3(type="text" ng-model="parser_variable")
+        .row
+          h4.span3 Parser attributes:
+          input.span3(type="text" ng-model="parser_attributes" ng-trim="false")
+        a.btn.btn-success(href="#" ng-click="save_item()") Set parser
+        a.btn.btn-warning(href="#" ng-click="cancel_item()") Cancel token edit
+      .span5
+        | {{selected_parser.help}}
+  .modal-footer
+    button.btn.btn-warning(ng-click="cancelEditor()")
+      i.icon-remove-circle
+      | Cancel
+    button.btn.btn-success(ng-click="saveEditor()")
+      i.icon-ok-circle
+      | Save
