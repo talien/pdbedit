@@ -1,5 +1,6 @@
 package controllers
- 
+
+import scala.util.{Try, Success, Failure}
 import play._
 import play.api.mvc._
 import play.api.libs.json._
@@ -148,20 +149,14 @@ object PatternDB {
 </patterndb> 
     }
 
-    def validate(filename: String) : Tuple2[Boolean,String] = {
-       try {
+    def validate(filename: String) : Try[Unit] = Try {
            Logger.log("Validating patterndb file: "+filename)
            val schemaLang = "http://www.w3.org/2001/XMLSchema"
            val factory = SchemaFactory.newInstance(schemaLang)
            val schema = factory.newSchema(new StreamSource("data/patterndb-4.xsd"))
            val validator = schema.newValidator()
            validator.validate(new StreamSource(filename))
-       } catch {
-           case ex: SAXException => return (false, ex.getMessage())
-           case ex: Exception => return(false, "Unknown error")
        }
-       (true, "")
-   }
 
    def pretty_print(filename: String) = (new scala.xml.PrettyPrinter(120,4)).format(open(filename))
 
@@ -226,11 +221,10 @@ object Application extends Controller {
             patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
             if (patterndb.filename == "" ) redirect_and_flash_error("Missing file!")
             else {
-                val (res, error_msg ) = PatternDB.validate(get_xml_file_name(session_id))
-                if (!res) 
-                    redirect_and_flash_error("Not a valid patterndb XML:"+error_msg)
-                else
-                    Redirect(routes.Application.index).withSession( "session" -> session_id )
+                PatternDB.validate(get_xml_file_name(session_id)) match {
+                    case Failure(ex) => redirect_and_flash_error("Not a valid patterndb XML:"+ex.getMessage())
+                    case Success(_) => Redirect(routes.Application.index).withSession( "session" -> session_id )
+                }
             }
          }.getOrElse { redirect_and_flash_error("Missing file!") }  
    }
