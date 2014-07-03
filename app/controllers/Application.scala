@@ -218,21 +218,21 @@ object Application extends Controller {
       session_id
    }
 
+   def redirect_and_flash_error(error : String) = Redirect(routes.Application.start).flashing("error" -> error)
+
    def upload = Action(parse.multipartFormData){ request =>    
          request.body.file("patterndb").map { patterndb =>
             val session_id = init_session
             patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
-            if (patterndb.filename == "" ) Redirect(routes.Application.start).flashing("error" -> "Missing file")
+            if (patterndb.filename == "" ) redirect_and_flash_error("Missing file!")
             else {
                 val (res, error_msg ) = PatternDB.validate(get_xml_file_name(session_id))
                 if (!res) 
-                    Redirect(routes.Application.start).flashing("error" -> ("Not a valid patterndb XML:"+error_msg)) 
+                    redirect_and_flash_error("Not a valid patterndb XML:"+error_msg)
                 else
                     Redirect(routes.Application.index).withSession( "session" -> session_id )
             }
-         }.getOrElse {
-             Redirect(routes.Application.start).flashing("error" -> "Missing file")
-            }  
+         }.getOrElse { redirect_and_flash_error("Missing file!") }  
    }
 
    def get_current_patterndb_file(filename: String) : String = {
