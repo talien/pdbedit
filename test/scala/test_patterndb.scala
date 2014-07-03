@@ -9,34 +9,34 @@ class PatternDBTest extends Specification {
        "return empty patterndb elements when invalid file present" in {
            val tempfile = java.io.File.createTempFile("invalid","")
            scala.tools.nsc.io.File(tempfile.getAbsolutePath()).writeAll("hello world")
-           PatternDB.open(tempfile.getAbsolutePath()) must equalTo (PatternDB.create_empty_xml)
+           PatternDB.open(tempfile.getAbsolutePath()) must equalTo (PatternDB.createEmptyXML)
        }
     }
 
     "get_ruleset_names" should {
        "return with empty list one empty patterndb" in {
-           PatternDB.create_empty("test_empty.xml")
-           PatternDB.get_ruleset_names("test_empty.xml") must equalTo (Seq())
+           PatternDB.createEmpty("test_empty.xml")
+           PatternDB.getRulesetNames("test_empty.xml") must equalTo (Seq())
        }
 
        "return with one name if one ruleset added" in {
-           PatternDB.create_empty("test_onerule.xml")
-           PatternDB.save_ruleset("test_onerule.xml", RuleSet("test", "test", Seq(), Seq()))
-           PatternDB.get_ruleset_names("test_onerule.xml") must equalTo (Seq("test"))
+           PatternDB.createEmpty("test_onerule.xml")
+           PatternDB.saveRuleset("test_onerule.xml", RuleSet("test", "test", Seq(), Seq()))
+           PatternDB.getRulesetNames("test_onerule.xml") must equalTo (Seq("test"))
        }
     }
 
     "get_ruleset" should {
        "be able to load ruleset saved with save_ruleset" in {
            val ruleset = RuleSet("test", "test", Seq(), Seq())
-           PatternDB.create_empty("test_onerule.xml")
-           PatternDB.save_ruleset("test_onerule.xml", ruleset)
-           PatternDB.get_ruleset("test_onerule.xml", "test") must equalTo (Some(ruleset))
+           PatternDB.createEmpty("test_onerule.xml")
+           PatternDB.saveRuleset("test_onerule.xml", ruleset)
+           PatternDB.getRuleset("test_onerule.xml", "test") must equalTo (Some(ruleset))
        }
 
        "return None if ruleset is not present" in {
-           PatternDB.create_empty("test_norule.xml")
-           PatternDB.get_ruleset("test_norule.xml", "test") must equalTo (None)
+           PatternDB.createEmpty("test_norule.xml")
+           PatternDB.getRuleset("test_norule.xml", "test") must equalTo (None)
        }
     }
 
