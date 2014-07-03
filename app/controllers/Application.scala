@@ -100,10 +100,14 @@ object PatternDB {
 
     def get_ruleset_names(filename : String) : Seq[String]  =  (open(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
 
-    def get_ruleset_xml(filename : String, ruleset_name : String) : scala.xml.Node = 
-            (((open(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
+    def get_ruleset_xml(filename : String, ruleset_name : String) : Option[scala.xml.Node] = 
+            (((open(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name)))
 
-    def get_ruleset(filename : String, ruleset_name : String) : RuleSet = RulesetConverter.xml_to_ruleset(get_ruleset_xml(filename, ruleset_name))
+    def get_ruleset(filename : String, ruleset_name : String) : Option[RuleSet] = 
+        get_ruleset_xml(filename, ruleset_name) match {
+           case Some(ruleset) => Some(RulesetConverter.xml_to_ruleset(ruleset))
+           case None => None
+        }
 
 
     def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
@@ -183,9 +187,10 @@ object Application extends Controller {
    ) }
 
    def ruleset(ruleset_name : String ) = Action { request => 
-      Ok( Json.toJson(
-            PatternDB.get_ruleset(get_xml_file_from_request(request),ruleset_name )
-      ))
+      PatternDB.get_ruleset(get_xml_file_from_request(request),ruleset_name ) match {
+         case Some(ruleset) => Ok(Json.toJson(ruleset))
+         case None => NotFound
+      }
    }
 
    def save_ruleset(ruleset_name : String) = Action(parse.json) { request =>

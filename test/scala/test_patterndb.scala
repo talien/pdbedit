@@ -31,13 +31,12 @@ class PatternDBTest extends Specification {
            val ruleset = RuleSet("test", "test", Seq(), Seq())
            PatternDB.create_empty("test_onerule.xml")
            PatternDB.save_ruleset("test_onerule.xml", ruleset)
-           PatternDB.get_ruleset("test_onerule.xml", "test") must equalTo (ruleset)
+           PatternDB.get_ruleset("test_onerule.xml", "test") must equalTo (Some(ruleset))
        }
 
-       "return what? if ruleset is not present" in {
-           val ruleset = RuleSet("test", "test", Seq(), Seq())
+       "return None if ruleset is not present" in {
            PatternDB.create_empty("test_norule.xml")
-           PatternDB.get_ruleset("test_norule.xml", "test") must equalTo (ruleset)
+           PatternDB.get_ruleset("test_norule.xml", "test") must equalTo (None)
        }
     }
 
