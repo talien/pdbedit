@@ -25,7 +25,7 @@ class PDBTest extends Specification {
                </rule>
               </rules>
              </ruleset>
-           val ruleset = RulesetConverter.xml_to_ruleset(ruleset_xml)
+           val ruleset = RulesetConverter.XMLToRuleset(ruleset_xml)
            ruleset.name must equalTo("ruleset_name")
            ruleset.id must equalTo("ruleset_id")
            ruleset.patterns(0).text must equalTo("program_pattern")
@@ -35,7 +35,7 @@ class PDBTest extends Specification {
             <ruleset id="ruleset_id" name="ruleset_name">
               <pattern>program_pattern</pattern>
             </ruleset>
-           val ruleset = RulesetConverter.xml_to_ruleset(ruleset_xml)
+           val ruleset = RulesetConverter.XMLToRuleset(ruleset_xml)
            ruleset.patterns(0).text must equalTo("program_pattern")
 
        }

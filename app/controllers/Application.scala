@@ -35,7 +35,7 @@ object Logger {
 }
 
 object RulesetConverter {
-    def xml_to_ruleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
+    def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
         { 
@@ -58,32 +58,32 @@ object RulesetConverter {
                      StringObj(tag.text)))
     ))
 
-   def to_xml(item: PatternDBItem) : scala.xml.Node = {
+   def toXML(item: PatternDBItem) : scala.xml.Node = {
        item match {
           case StringObj(text) =>
              scala.xml.Unparsed(text)
           case Rule(id, provider, rule_class, patterns, tags) =>
             <rule id={id} provider={provider} class={rule_class}>
              <patterns>
-               { patterns.map( pattern => <pattern>{to_xml(pattern)}</pattern> ) }
+               { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
              </patterns>
              <tags>
-               { tags.map( tag => <tag>{to_xml(tag)}</tag> ) }
+               { tags.map( tag => <tag>{toXML(tag)}</tag> ) }
              </tags>
             </rule>
           case RuleSet(name, id, patterns, rules) =>
             <ruleset id={id} name={name}>
             <patterns>
-             { patterns.map( pattern => <pattern>{to_xml(pattern)}</pattern> ) }
+             { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
             </patterns>
             <rules>
-              { rules.map( rule => to_xml(rule) ) }
+              { rules.map( rule => toXML(rule) ) }
             </rules>
             </ruleset>
        }
    }
 
-   def ruleset_to_xml(ruleset: RuleSet) : scala.xml.Node = to_xml(ruleset)
+   def rulesetToXML(ruleset: RuleSet) : scala.xml.Node = toXML(ruleset)
 
 }
 
@@ -106,7 +106,7 @@ object PatternDB {
 
     def get_ruleset(filename : String, ruleset_name : String) : Option[RuleSet] = 
         get_ruleset_xml(filename, ruleset_name) match {
-           case Some(ruleset) => Some(RulesetConverter.xml_to_ruleset(ruleset))
+           case Some(ruleset) => Some(RulesetConverter.XMLToRuleset(ruleset))
            case None => None
         }
 
@@ -138,7 +138,7 @@ object PatternDB {
 
 
     def save_ruleset(filename : String, ruleset : RuleSet): String = {
-        val xml = RulesetConverter.ruleset_to_xml(ruleset)
+        val xml = RulesetConverter.rulesetToXML(ruleset)
         Logger.log("Saving ruleset:"+ruleset.name+" to file:"+filename)
         return save_ruleset_xml(filename, xml, ruleset.name)
     }
