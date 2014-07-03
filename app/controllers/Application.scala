@@ -173,33 +173,33 @@ object Application extends Controller {
     implicit val rulesetFormat = Json.format[RuleSet]
 
 
-   def get_xml_file_name(session_id: String) : String = "/tmp/pdbedit/" + session_id + "/pdb.xml"
+   def getXMLFileName(session_id: String) : String = "/tmp/pdbedit/" + session_id + "/pdb.xml"
 
-   def get_xml_file_from_request (request : Request[_]) : String = get_xml_file_name(request.session.get("session" ).get) 
+   def getXMLFileFromRequest (request : Request[_]) : String = getXMLFileName(request.session.get("session" ).get) 
 
    def namelist = Action { request => Ok(
-       Json.toJson(PatternDB.getRulesetNames(get_xml_file_from_request(request))) 
+       Json.toJson(PatternDB.getRulesetNames(getXMLFileFromRequest(request))) 
    ) }
 
    def ruleset(ruleset_name : String ) = Action { request => 
-      PatternDB.getRuleset(get_xml_file_from_request(request),ruleset_name ) match {
+      PatternDB.getRuleset(getXMLFileFromRequest(request),ruleset_name ) match {
          case Some(ruleset) => Ok(Json.toJson(ruleset))
          case None => NotFound
       }
    }
 
-   def save_ruleset(ruleset_name : String) = Action(parse.json) { request =>
-      Ok(PatternDB.saveRuleset(get_xml_file_from_request(request) , request.body.asOpt[RuleSet].get))
+   def saveRuleset(ruleset_name : String) = Action(parse.json) { request =>
+      Ok(PatternDB.saveRuleset(getXMLFileFromRequest(request) , request.body.asOpt[RuleSet].get))
    }
 
-   def delete_ruleset(ruleset_name: String) = Action { request =>
-      Ok(PatternDB.removeRuleset(get_xml_file_from_request(request), ruleset_name))
+   def deleteRuleset(ruleset_name: String) = Action { request =>
+      Ok(PatternDB.removeRuleset(getXMLFileFromRequest(request), ruleset_name))
    }
 
-   def get_session_directory_file(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
+   def getSessionDirectoryFile(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
 
-   def make_session_directory(session_id : String) : Unit = {
-       val dir = get_session_directory_file(session_id)
+   def makeSessionDirectory(session_id : String) : Unit = {
+       val dir = getSessionDirectoryFile(session_id)
        if (!dir.exists())
        {
            dir.mkdirs();  
@@ -207,35 +207,35 @@ object Application extends Controller {
    }
 
 
-   def init_session = {
+   def initSession = {
       val session_id = java.util.UUID.randomUUID().toString()
-      make_session_directory(session_id)
+      makeSessionDirectory(session_id)
       session_id
    }
 
-   def redirect_and_flash_error(error : String) = Redirect(routes.Application.start).flashing("error" -> error)
+   def redirectAndFlashError(error : String) = Redirect(routes.Application.start).flashing("error" -> error)
 
    def upload = Action(parse.multipartFormData){ request =>    
          request.body.file("patterndb").map { patterndb =>
-            val session_id = init_session
-            patterndb.ref.moveTo(new File(get_xml_file_name(session_id)),true)
-            if (patterndb.filename == "" ) redirect_and_flash_error("Missing file!")
+            val session_id = initSession
+            patterndb.ref.moveTo(new File(getXMLFileName(session_id)),true)
+            if (patterndb.filename == "" ) redirectAndFlashError("Missing file!")
             else {
-                PatternDB.validate(get_xml_file_name(session_id)) match {
-                    case Failure(ex) => redirect_and_flash_error("Not a valid patterndb XML:"+ex.getMessage())
+                PatternDB.validate(getXMLFileName(session_id)) match {
+                    case Failure(ex) => redirectAndFlashError("Not a valid patterndb XML:"+ex.getMessage())
                     case Success(_) => Redirect(routes.Application.index).withSession( "session" -> session_id )
                 }
             }
-         }.getOrElse { redirect_and_flash_error("Missing file!") }  
+         }.getOrElse { redirectAndFlashError("Missing file!") }  
    }
 
-   def get_current_patterndb_file(filename: String) : String = {
+   def getCurrentPatternDBFile(filename: String) : String = {
        Logger.log("Patterndb file downloaded: "+filename)
        return PatternDB.prettyPrint(filename)
    }
 
    def download = Action { request =>
-      Ok(scala.xml.Unparsed(get_current_patterndb_file(get_xml_file_from_request(request))))
+      Ok(scala.xml.Unparsed(getCurrentPatternDBFile(getXMLFileFromRequest(request))))
    }
 
    def start = Action { request => 
@@ -254,22 +254,22 @@ object Application extends Controller {
        }
     }
 
-   def cleanup_session_directory(session_id: String) : Unit = {
+   def cleanupSessionDirectory(session_id: String) : Unit = {
       Logger.log("Cleaning up session "+session_id)
-      val dir = get_session_directory_file(session_id)
+      val dir = getSessionDirectoryFile(session_id)
       dir.listFiles.foreach( file => file.delete)
       dir.delete
    }
 
    def logout = Action { request => 
       request.session.get("session") map { 
-          session => cleanup_session_directory(session) }
+          session => cleanupSessionDirectory(session) }
       Redirect(routes.Application.start).withNewSession
    }
 
-   def new_file = Action {
-      val session_id = init_session
-      PatternDB.createEmpty(get_xml_file_name(session_id))
+   def newFile = Action {
+      val session_id = initSession
+      PatternDB.createEmpty(getXMLFileName(session_id))
 
       Logger.log("New file created in session "+session_id)
       Redirect(routes.Application.index).withSession( "session" -> session_id )
@@ -319,7 +319,7 @@ object Application extends Controller {
       }
    }*/
 
-   def build_and_get_query(query: String) = {
+   def buildAndGetQuery(query: String) = {
        if (query == "")
           matchAllQuery()
        else
@@ -332,7 +332,7 @@ object Application extends Controller {
       println(query)
       val node = nodeBuilder().node();
       val client = node.client();
-      val qb = build_and_get_query(query)
+      val qb = buildAndGetQuery(query)
       val response = client.prepareSearch("test").setFrom(from).setQuery(qb).setSize(50).execute().actionGet();
       println(response.getHits().totalHits())
       val res = response.getHits().slice(0,50).map ( hit => {
