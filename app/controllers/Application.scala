@@ -91,7 +91,7 @@ object PatternDB {
         try {
             scala.xml.XML.loadFile(filename)
         } catch {
-            case e:org.xml.sax.SAXParseException => <patterndb></patterndb>
+            case e:org.xml.sax.SAXParseException => create_empty_xml
         }
     }
 
@@ -100,8 +100,10 @@ object PatternDB {
 
     def get_ruleset_names(filename : String) : Seq[String]  =  (open(filename)  \ "ruleset") map ( rule => (rule \ "@name").toString() )
 
-    def get_ruleset(filename : String, ruleset_name : String) : scala.xml.Node = 
+    def get_ruleset_xml(filename : String, ruleset_name : String) : scala.xml.Node = 
             (((open(filename)) \ "ruleset") find (rule => ((rule \ "@name").toString() == ruleset_name))).get
+
+    def get_ruleset(filename : String, ruleset_name : String) : RuleSet = RulesetConverter.xml_to_ruleset(get_ruleset_xml(filename, ruleset_name))
 
 
     def remove_ruleset_from_xml( patterndb: scala.xml.Node, ruleset_name: String) : Seq[scala.xml.Node] = {
@@ -159,7 +161,9 @@ object PatternDB {
 
    def pretty_print(filename: String) = (new scala.xml.PrettyPrinter(120,4)).format(open(filename))
 
-   def create_empty(filename : String) = save(filename,wrap_rulesets_in_patterndb_prologue(Seq()))
+   def create_empty_xml = wrap_rulesets_in_patterndb_prologue(Seq())
+
+   def create_empty(filename : String) = save(filename,create_empty_xml)
 
 }
 
@@ -180,9 +184,7 @@ object Application extends Controller {
 
    def ruleset(ruleset_name : String ) = Action { request => 
       Ok( Json.toJson(
-            RulesetConverter.xml_to_ruleset(
-                PatternDB.get_ruleset(get_xml_file_from_request(request),ruleset_name )
-            )
+            PatternDB.get_ruleset(get_xml_file_from_request(request),ruleset_name )
       ))
    }
 
