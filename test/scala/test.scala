@@ -10,6 +10,8 @@ class PDBTest extends Specification {
        "convert ruleset xml to RuleSet object" in {
            val ruleset_xml = 
              <ruleset id="ruleset_id" name="ruleset_name">
+              <url>test_url</url>
+              <description>test_desc</description>
               <patterns>
                <pattern>program_pattern</pattern>
               </patterns>
@@ -29,6 +31,8 @@ class PDBTest extends Specification {
            ruleset.name must equalTo("ruleset_name")
            ruleset.id must equalTo("ruleset_id")
            ruleset.patterns(0).text must equalTo("program_pattern")
+           ruleset.url must equalTo("test_url")
+           ruleset.description must equalTo("test_desc")
        }
        "convert v3 ruleset xml to RuleSet object" in {
            val ruleset_xml = 

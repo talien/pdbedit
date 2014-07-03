@@ -5,6 +5,8 @@ import play.api.test.Helpers._
 import controllers.{PatternDB, RulesetConverter, RuleSet}
 
 class PatternDBTest extends Specification {
+    def testRuleSet = RuleSet("test", "test", "testUrl", "testDesc",Seq(), Seq())
+
     "open" should {
        "return empty patterndb elements when invalid file present" in {
            val tempfile = java.io.File.createTempFile("invalid","")
@@ -21,17 +23,16 @@ class PatternDBTest extends Specification {
 
        "return with one name if one ruleset added" in {
            PatternDB.createEmpty("test_onerule.xml")
-           PatternDB.saveRuleset("test_onerule.xml", RuleSet("test", "test", Seq(), Seq()))
+           PatternDB.saveRuleset("test_onerule.xml", testRuleSet)
            PatternDB.getRulesetNames("test_onerule.xml") must equalTo (Seq("test"))
        }
     }
 
     "get_ruleset" should {
        "be able to load ruleset saved with save_ruleset" in {
-           val ruleset = RuleSet("test", "test", Seq(), Seq())
            PatternDB.createEmpty("test_onerule.xml")
-           PatternDB.saveRuleset("test_onerule.xml", ruleset)
-           PatternDB.getRuleset("test_onerule.xml", "test") must equalTo (Some(ruleset))
+           PatternDB.saveRuleset("test_onerule.xml", testRuleSet)
+           PatternDB.getRuleset("test_onerule.xml", "test") must equalTo (Some(testRuleSet))
        }
 
        "return None if ruleset is not present" in {

@@ -23,7 +23,7 @@ abstract class PatternDBItem
 
 case class StringObj(text: String) extends PatternDBItem
 case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
-case class RuleSet(val name: String, val id:String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
+case class RuleSet(val name: String, val id:String, val url: String, val description: String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
 
 object Logger {
     def log(msg : String) : Unit = {
@@ -35,9 +35,12 @@ object Logger {
 }
 
 object RulesetConverter {
+
     def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
+        (ruleset \ "url") map ( url => url.text) match { case Seq() => "" case Seq(item) => item },
+        (ruleset \ "description") map ( description => description.text) match { case Seq() => "" case Seq(item) => item },
         { 
           lazy val v3_patterns = (ruleset \ "pattern") map ( pattern => StringObj(pattern.text) )
           lazy val v4_patterns = (ruleset \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) )
@@ -71,8 +74,10 @@ object RulesetConverter {
                { tags.map( tag => <tag>{toXML(tag)}</tag> ) }
              </tags>
             </rule>
-          case RuleSet(name, id, patterns, rules) =>
+          case RuleSet(name, id, url, description, patterns, rules) =>
             <ruleset id={id} name={name}>
+            <url>{url}</url>
+            <description>{description}</description>
             <patterns>
              { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
             </patterns>
