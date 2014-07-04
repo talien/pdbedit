@@ -25,5 +25,5 @@ html(ng-app="sctest")
         ul.nav.nav-list.bs-docs-sidenav
           li(ng-repeat="name in ruleset_names")
             a(href="#" ng-click="ruleset_editor.load_ruleset(name)") {{name}}
-        = render("button-add.jade", Map( "click" -> "on_add_ruleset()", "caption" -> "Add ruleset"))
+        = render("button-add.jade", Map( "click" -> "on_add_ruleset()", "caption" -> "Add ruleset","id" -> "add_rule"))
       = render("ruleset_editor.jade")

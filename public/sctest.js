@@ -75,10 +75,10 @@ scmodule.controller("scload", function($scope, $http, $dialog) {
           '<h1>Adding new ruleset</h1>'+
           '</div>'+
           '<div class="modal-body">'+
-          '<p>Enter the new ruleset name <input ng-model="result" /></p>'+
+          '<p>Enter the new ruleset name <input id="rulename" ng-model="result" /></p>'+
           '</div>'+
           '<div class="modal-footer">'+
-          '<button ng-click="close(result)" class="btn btn-primary" >Close</button>'+
+          '<button id="add_rule_ok" ng-click="close(result)" class="btn btn-primary" >Close</button>'+
           '</div>';
 
 
