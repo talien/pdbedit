@@ -57,5 +57,17 @@ class EndToEnd extends Specification {
 
        }
      }
+
+     "be able to click on new item" in {
+       running(TestServer(3333), FIREFOX) { browser =>
+          browser.goTo("http://localhost:3333")
+          browser.$("#create_new").click()
+          browser.$("#add_rule").click()
+          browser.$("#rulename").text("test")
+          browser.$("#add_rule_ok").click()
+          Thread.sleep(5000)
+          browser.url must equalTo("http://localhost:3333/index#")
+       }
+     }
    }
 }
