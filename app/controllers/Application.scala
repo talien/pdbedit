@@ -36,11 +36,23 @@ object Logger {
 
 object RulesetConverter {
 
+    def getOptionalStringItemFromNodes(nodes: Seq[scala.xml.Node]) : String =
+        nodes map ( element => element.text) match { case Seq() => "" case Seq(item) => item }
+
+    def XMLToRule(rule: scala.xml.Node) : Rule =
+        Rule(
+          (rule \ "@id").toString(),
+          (rule \ "@provider").toString(),
+          (rule \ "@class").toString(),
+          (rule \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) ),
+          (rule \ "tags" \ "tag") map (tag => StringObj(tag.text))
+        )
+
     def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
         (ruleset \ "@name").toString(),
         (ruleset \ "@id").toString(),
-        (ruleset \ "url") map ( url => url.text) match { case Seq() => "" case Seq(item) => item },
-        (ruleset \ "description") map ( description => description.text) match { case Seq() => "" case Seq(item) => item },
+        getOptionalStringItemFromNodes(ruleset \ "url"),
+        getOptionalStringItemFromNodes(ruleset \ "description"),
         { 
           lazy val v3_patterns = (ruleset \ "pattern") map ( pattern => StringObj(pattern.text) )
           lazy val v4_patterns = (ruleset \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) )
@@ -50,16 +62,8 @@ object RulesetConverter {
               v3_patterns
         }
         ,
-        (ruleset \ "rules" \ "rule") map ( rule =>
-            Rule(
-                  (rule \ "@id").toString(),
-                  (rule \ "@provider").toString(),
-                  (rule \ "@class").toString(),
-                  (rule \ "patterns" \ "pattern") map ( pattern =>
-                     StringObj(pattern.text) ),
-                  (rule \ "tags" \ "tag") map (tag => 
-                     StringObj(tag.text)))
-    ))
+        (ruleset \ "rules" \ "rule") map ( rule => XMLToRule(rule))
+    )
 
    def toXML(item: PatternDBItem) : scala.xml.Node = {
        item match {
