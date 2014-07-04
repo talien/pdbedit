@@ -2,6 +2,7 @@ create_empty_ruleset = (ruleset_name) ->
   ruleset =
      name: ruleset_name
      id : uuid()
+     description : ""
      patterns : []
      rules : []
      tags : []

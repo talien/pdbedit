@@ -22,7 +22,7 @@ import org.elasticsearch.common.unit._
 abstract class PatternDBItem
 
 case class StringObj(text: String) extends PatternDBItem
-case class Rule(val id:String, val provider: String, val rule_class : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
+case class Rule(val id:String, val provider: String, val rule_class : String, val description : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
 case class RuleSet(val name: String, val id:String, val url: String, val description: String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
 
 object Logger {
@@ -44,6 +44,7 @@ object RulesetConverter {
           (rule \ "@id").toString(),
           (rule \ "@provider").toString(),
           (rule \ "@class").toString(),
+          getOptionalStringItemFromNodes(rule \ "description"),
           (rule \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) ),
           (rule \ "tags" \ "tag") map (tag => StringObj(tag.text))
         )
@@ -69,8 +70,9 @@ object RulesetConverter {
        item match {
           case StringObj(text) =>
              scala.xml.Unparsed(text)
-          case Rule(id, provider, rule_class, patterns, tags) =>
+          case Rule(id, provider, rule_class, description, patterns, tags) =>
             <rule id={id} provider={provider} class={rule_class}>
+             <description>{description}</description>
              <patterns>
                { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
              </patterns>

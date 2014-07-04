@@ -2,14 +2,11 @@
   h3 {{ruleset_editor.ruleset.name}}
   ng-switch(on="ruleset_editor.is_editing")
     div(ng-switch-when="true")
-      label(for="url")
-        | Url
+      | Url
       input(ng-model="ruleset_editor.ruleset.url" name="url")
-      label(for="desc")
-        | Description
+      | Description
       input(ng-model="ruleset_editor.ruleset.description" name="desc")
-      p 
-        | Patterns
+      | Patterns
       ul  
         li(ng-repeat="pattern in ruleset_editor.ruleset.patterns")
           input(ng-model="pattern.text")
@@ -42,6 +39,8 @@
           input(ng-model="rule.provider")
           | Class:
           input(ng-model="rule.rule_class")
+          | Description:
+          input(ng-model="rule.description")
           <!-- TODO: select -->
           table
             tr(ng-repeat="pattern in rule.patterns")
