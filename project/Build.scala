@@ -8,7 +8,9 @@ object ApplicationBuild extends Build {
   val appName         = "pdbedit"
   val appVersion      = "0.1"
  
-  val appDependencies =  Seq("org.fusesource.scalate" %% "scalate-core" % "1.6.1", "org.elasticsearch" % "elasticsearch" % "0.90.1")
+  val appDependencies =  Seq("org.fusesource.scalate" %% "scalate-core" % "1.6.1", 
+                             "org.elasticsearch" % "elasticsearch" % "0.90.1", 
+                             "org.seleniumhq.selenium" % "selenium-java" % "2.41.0" )
 
   val coffeetestTask = TaskKey[Unit]("coffee-test-compile", "Compiling coffeescript tests for Jasmine")
   val coffeetest = (baseDirectory) map { (base) => 
