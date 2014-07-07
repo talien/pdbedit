@@ -227,31 +227,31 @@ object Application extends Controller {
 
    def getXMLFileName(session_id: String) : String = "/tmp/pdbedit/" + session_id + "/pdb.xml"
 
-   def getXMLFileFromRequest (request : Request[_]) : String = getXMLFileName(request.session.get("session" ).get) 
+   def getPatternDBFileNameFromRequest (request : Request[_]) : String = getXMLFileName(request.session.get("session" ).get) 
 
    def namelist = Action { request => Ok(
-       Json.toJson(PatternDB.getRulesetNames(getXMLFileFromRequest(request))) 
+       Json.toJson(PatternDB.getRulesetNames(getPatternDBFileNameFromRequest(request))) 
    ) }
 
    def ruleset(ruleset_name : String ) = Action { request => 
-      PatternDB.getRuleset(getXMLFileFromRequest(request),ruleset_name ) match {
+      PatternDB.getRuleset(getPatternDBFileNameFromRequest(request),ruleset_name ) match {
          case Some(ruleset) => Ok(Json.toJson(ruleset))
          case None => NotFound
       }
    }
 
    def saveRuleset(ruleset_name : String) = Action(parse.json) { request =>
-      Ok(PatternDB.saveRuleset(getXMLFileFromRequest(request) , request.body.asOpt[RuleSet].get))
+      Ok(PatternDB.saveRuleset(getPatternDBFileNameFromRequest(request) , request.body.asOpt[RuleSet].get))
    }
 
    def deleteRuleset(ruleset_name: String) = Action { request =>
-      Ok(PatternDB.removeRuleset(getXMLFileFromRequest(request), ruleset_name))
+      Ok(PatternDB.removeRuleset(getPatternDBFileNameFromRequest(request), ruleset_name))
    }
 
-   def getSessionDirectoryFile(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
+   def getSessionDirectory(session_id: String): java.io.File = new File("/tmp/pdbedit/" + session_id)
 
    def makeSessionDirectory(session_id : String) : Unit = {
-       val dir = getSessionDirectoryFile(session_id)
+       val dir = getSessionDirectory(session_id)
        if (!dir.exists())
        {
            dir.mkdirs();  
@@ -281,13 +281,13 @@ object Application extends Controller {
          }.getOrElse { redirectAndFlashError("Missing file!") }  
    }
 
-   def getCurrentPatternDBFile(filename: String) : String = {
+   def getPatternDBFile(filename: String) : String = {
        Logger.log("Patterndb file downloaded: "+filename)
        return PatternDB.prettyPrint(filename)
    }
 
    def download = Action { request =>
-      Ok(scala.xml.Unparsed(getCurrentPatternDBFile(getXMLFileFromRequest(request))))
+      Ok(scala.xml.Unparsed(getPatternDBFile(getPatternDBFileNameFromRequest(request))))
    }
 
    def start = Action { request => 
@@ -308,7 +308,7 @@ object Application extends Controller {
 
    def cleanupSessionDirectory(session_id: String) : Unit = {
       Logger.log("Cleaning up session "+session_id)
-      val dir = getSessionDirectoryFile(session_id)
+      val dir = getSessionDirectory(session_id)
       if (dir != null)
       {
         if (dir.listFiles != null) dir.listFiles.foreach( file => file.delete)
