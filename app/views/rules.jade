@@ -1,0 +1,70 @@
+accordion(close-others="true")
+  accordion-group.span11(ng-repeat="rule in ruleset_editor.ruleset.rules")
+    accordion-heading  {{rule.id}}
+    ng-switch(on="ruleset_editor.is_rule_editing")
+      <!-- Editing rule content-->
+      div(ng-switch-when="true")
+        p
+          | Provider:
+          input(ng-model="rule.provider")
+        p
+          | Class:
+          input(ng-model="rule.rule_class")
+        p
+          | Description:
+          input(ng-model="rule.description")
+        <!-- TODO: select --> 
+        table
+          tr(ng-repeat="pattern in rule.patterns")
+            td  
+              input.row.span9(ng-model="pattern.text")
+              a.btn.btn-danger(href="#" ng-click="remove_object(rule.patterns, pattern)")
+                i.icon-minus-sign
+              a.btn.btn-warning(href="#" ng-click="openEditor(pattern)")
+                i.icon-edit
+                | Use editor
+        = render("button-add.jade", Map( "click" -> "add_string_object(rule.patterns)", "caption" -> "Add pattern"))
+        h4 Values:
+        table
+          tr(ng-repeat="value in rule.values")
+            td
+              input(ng-model="value.name")
+            td
+              input(ng-model="value.value")
+            td 
+              a.btn.btn-danger(href="#" ng-click="remove_object(rule.values, value)")
+                i.icon-minus-sign
+        = render("button-add.jade", Map( "click" -> "rule.add_value()", "caption" -> "Add value"))
+        h4 Tags:
+        ul  
+          li(ng-repeat="rule_tag in rule.tags")
+            input(ng-model="rule_tag.text")
+            a.btn.btn-danger(href="#" ng-click="remove_object(rule.tags, rule_tag)")
+              i.icon-minus-sign
+        = render("button-add.jade", Map( "click" -> "add_string_object(rule.tags)", "caption" -> "Add tag"))
+        a.btn.btn-success(href="#" ng-click="ruleset_editor.set_rule()")
+          i.icon-ok-circle
+          | Save rule
+        <!--End Editing rule content --> 
+
+      div(ng-switch-default)
+        p
+          | Provider: {{rule.provider}} 
+        p
+          | Class: {{rule.rule_class}}
+        h4 Patterns:
+        table.table
+          tr(ng-repeat="pattern in rule.patterns")
+            td {{pattern.text}}
+        h4 Values:
+        ul
+          li(ng-repeat="value in rule.values")  {{value.name}} := {{value.value}}
+        h4 Tags:
+        ul
+          li(ng-repeat="tag in rule.tags")  {{tag.text}}
+        a.btn.btn-warning(href="#" ng-click="ruleset_editor.edit_rule()")
+          i.icon-edit
+          | Edit rule
+        a.btn.btn-danger(href="#" ng-click="remove_object(ruleset_editor.ruleset.rules, rule)")
+          i.icon-minus-sign
+          | Remove rule

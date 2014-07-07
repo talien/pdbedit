@@ -1,6 +1,7 @@
 package controllers
 
 import scala.util.{Try, Success, Failure}
+import scala.xml.{Elem, Node, TopScope, Text, Null}
 import play._
 import play.api.mvc._
 import play.api.libs.json._
@@ -22,8 +23,25 @@ import org.elasticsearch.common.unit._
 abstract class PatternDBItem
 
 case class StringObj(text: String) extends PatternDBItem
-case class Rule(val id:String, val provider: String, val rule_class : String, val description : String, val patterns: Seq[StringObj], val tags: Seq[StringObj]) extends PatternDBItem
-case class RuleSet(val name: String, val id:String, val url: String, val description: String, val patterns: Seq[StringObj], val rules: Seq[Rule]) extends PatternDBItem
+case class Value(name: String, value: String) extends PatternDBItem
+case class Rule(
+    val id:String, 
+    val provider: String, 
+    val rule_class : String, 
+    val description : Option[String], 
+    val patterns: Seq[StringObj], 
+    val tags: Seq[StringObj],
+    val values : Seq[Value]
+) extends PatternDBItem
+
+case class RuleSet(
+    val name: String, 
+    val id: String, 
+    val url: Option[String], 
+    val description: Option[String], 
+    val patterns: Seq[StringObj], 
+    val rules: Seq[Rule]
+) extends PatternDBItem
 
 object Logger {
     def log(msg : String) : Unit = {
@@ -36,8 +54,18 @@ object Logger {
 
 object RulesetConverter {
 
-    def getOptionalStringItemFromNodes(nodes: Seq[scala.xml.Node]) : String =
-        nodes map ( element => element.text) match { case Seq() => "" case Seq(item) => item }
+    def getOptionalStringItemFromNodes(nodes: Seq[scala.xml.Node]) : Option[String] =
+        nodes map ( element => element.text) 
+           match { 
+             case Seq() => None 
+             case Seq(item) => Some(item) 
+           }
+
+    def XMLToValue(value : scala.xml.Node) : Value = 
+        Value(
+          (value \ "@name").toString(),
+          value.text
+        )
 
     def XMLToRule(rule: scala.xml.Node) : Rule =
         Rule(
@@ -46,7 +74,8 @@ object RulesetConverter {
           (rule \ "@class").toString(),
           getOptionalStringItemFromNodes(rule \ "description"),
           (rule \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) ),
-          (rule \ "tags" \ "tag") map (tag => StringObj(tag.text))
+          (rule \ "tags" \ "tag") map (tag => StringObj(tag.text)),
+          (rule \ "values" \ "value") map (value => XMLToValue(value))
         )
 
     def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
@@ -66,24 +95,35 @@ object RulesetConverter {
         (ruleset \ "rules" \ "rule") map ( rule => XMLToRule(rule))
     )
 
+   def optionalStringToXML(item: Option[String], tag : String) : scala.xml.Node =
+      item match { 
+         case Some(value) => Elem(null, tag, Null, TopScope, Text(value))
+         case None => Elem(null, tag, Null, TopScope)
+      }
+
    def toXML(item: PatternDBItem) : scala.xml.Node = {
        item match {
           case StringObj(text) =>
              scala.xml.Unparsed(text)
-          case Rule(id, provider, rule_class, description, patterns, tags) =>
+          case Rule(id, provider, rule_class, description, patterns, tags, values) =>
             <rule id={id} provider={provider} class={rule_class}>
-             <description>{description}</description>
+             { optionalStringToXML(description, "description") }
              <patterns>
                { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
              </patterns>
              <tags>
                { tags.map( tag => <tag>{toXML(tag)}</tag> ) }
              </tags>
+             <values>
+               { values.map( value => toXML(value) ) }
+             </values>
             </rule>
+          case Value(name, value) =>
+            <value name={name}>{value}</value>
           case RuleSet(name, id, url, description, patterns, rules) =>
             <ruleset id={id} name={name}>
-            <url>{url}</url>
-            <description>{description}</description>
+            { optionalStringToXML(url, "url") }
+            { optionalStringToXML(description, "description") }
             <patterns>
              { patterns.map( pattern => <pattern>{toXML(pattern)}</pattern> ) }
             </patterns>
@@ -180,6 +220,7 @@ object PatternDB {
 object Application extends Controller {
 
     implicit val stringobjFormat = Json.format[StringObj]
+    implicit val valueFormat = Json.format[Value]
     implicit val ruleFormat = Json.format[Rule]
     implicit val rulesetFormat = Json.format[RuleSet]
 

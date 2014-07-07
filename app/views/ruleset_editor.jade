@@ -2,10 +2,12 @@
   h3 {{ruleset_editor.ruleset.name}}
   ng-switch(on="ruleset_editor.is_editing")
     div(ng-switch-when="true")
-      | Url
-      input(ng-model="ruleset_editor.ruleset.url" name="url")
-      | Description
-      input(ng-model="ruleset_editor.ruleset.description" name="desc")
+      p
+        | Url
+        input(ng-model="ruleset_editor.ruleset.url" name="url")
+      p  
+        | Description
+        input(ng-model="ruleset_editor.ruleset.description" name="desc")
       | Patterns
       ul  
         li(ng-repeat="pattern in ruleset_editor.ruleset.patterns")
@@ -29,61 +31,12 @@
         | Edit ruleset properties
   h3 Rules:
   = render("button-add.jade", Map( "click" -> "ruleset_editor.add_rule()", "caption" -> "Add rule"))
-  accordion(close-others="true")
-    accordion-group.span11(ng-repeat="rule in ruleset_editor.ruleset.rules")
-      accordion-heading  {{rule.id}}
-      ng-switch(on="ruleset_editor.is_rule_editing")
-        <!-- Editing rule content-->
-        div(ng-switch-when="true")
-          | Provider:
-          input(ng-model="rule.provider")
-          | Class:
-          input(ng-model="rule.rule_class")
-          | Description:
-          input(ng-model="rule.description")
-          <!-- TODO: select -->
-          table
-            tr(ng-repeat="pattern in rule.patterns")
-              td
-                input.row.span9(ng-model="pattern.text")
-                a.btn.btn-danger(href="#" ng-click="remove_object(rule.patterns, pattern)")
-                  i.icon-minus-sign
-                a.btn.btn-warning(href="#" ng-click="openEditor(pattern)")
-                  i.icon-edit
-                  | Use editor
-          = render("button-add.jade", Map( "click" -> "add_string_object(rule.patterns)", "caption" -> "Add pattern"))
-          h4 Tags:
-          ul
-            li(ng-repeat="rule_tag in rule.tags")
-              input(ng-model="rule_tag.text")
-              a.btn.btn-danger(href="#" ng-click="remove_object(rule.tags, rule_tag)")
-                i.icon-minus-sign
-          = render("button-add.jade", Map( "click" -> "add_string_object(rule.tags)", "caption" -> "Add tag"))
-          a.btn.btn-success(href="#" ng-click="ruleset_editor.set_rule()")
-            i.icon-ok-circle
-            | Save rule
-          <!--End Editing rule content -->
-
-        div(ng-switch-default)
-          h3 Provider: {{rule.provider}} Class: {{rule.rule_class}}
-          h4 Patterns:
-          table.table
-            tr(ng-repeat="pattern in rule.patterns")
-              td {{pattern.text}}
-          h4 Tags:
-          ul
-            li(ng-repeat="tag in rule.tags")  {{tag.text}}
-          a.btn.btn-warning(href="#" ng-click="ruleset_editor.edit_rule()")
-            i.icon-edit
-            | Edit rule
-          a.btn.btn-danger(href="#" ng-click="remove_object(ruleset_editor.ruleset.rules, rule)")
-            i.icon-minus-sign
-            | Remove rule
-    .row.span9
-      a.btn.btn-success(href="#" ng-click="ruleset_editor.save_ruleset()")
-        i.icon-share
-        | Commit ruleset
-      a.btn.btn-danger(href="#" ng-click="ruleset_editor.delete_ruleset(refresh_name_list)")
-        i.icon-minus-sign
-        | Delete ruleset
+  = render("rules.jade")
+  .row.span9
+    a.btn.btn-success(href="#" ng-click="ruleset_editor.save_ruleset()")
+      i.icon-share
+      | Commit ruleset
+    a.btn.btn-danger(href="#" ng-click="ruleset_editor.delete_ruleset(refresh_name_list)")
+      i.icon-minus-sign
+      | Delete ruleset
   = render("editor.jade")
