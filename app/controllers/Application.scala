@@ -268,8 +268,11 @@ object Application extends Controller {
    def cleanupSessionDirectory(session_id: String) : Unit = {
       Logger.log("Cleaning up session "+session_id)
       val dir = getSessionDirectoryFile(session_id)
-      dir.listFiles.foreach( file => file.delete)
-      dir.delete
+      if (dir != null)
+      {
+        if (dir.listFiles != null) dir.listFiles.foreach( file => file.delete)
+        dir.delete
+      }
    }
 
    def logout = Action { request => 
