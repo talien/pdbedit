@@ -1,0 +1,40 @@
+h4 Examples
+table.table
+  tr  
+    td  
+      | Example Program
+    td  
+      | Example Message
+    td  
+      | Example Values
+    td  
+      | Example Tags 
+    td
+  tr.table-striped(ng-repeat="example in rule.examples")
+    td
+      input(ng-model="example.test_program")
+    td
+      input(ng-model="example.test_message")
+    td
+      table
+        tr(ng-repeat="value in example.test_values")
+          td  
+            input(ng-model="value.name")
+          td  
+            input(ng-model="value.value")
+          td  
+            a.btn.btn-danger(href="#" ng-click="example.remove_value(value)")
+              i.icon-minus-sign
+      = render("button-add.jade", Map( "click" -> "example.add_value()", "caption" -> "Add value"))
+    td
+      ul
+        li(ng-repeat="tag in example.test_tags")
+          input(ng-model="tag.text")
+          a.btn.btn-danger(href="#" ng-click="example.remove_tag(tag)")
+            i.icon-minus-sign
+      = render("button-add.jade", Map( "click" -> "example.add_tag()", "caption" -> "Add tag"))
+    td
+      = render("button-remove.jade", Map( "click" -> "rule.remove_example(example)", "caption" -> "Remove example"))
+= render("button-add.jade", Map( "click" -> "rule.add_example()", "caption" -> "Add example"))
+
+

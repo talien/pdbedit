@@ -5,7 +5,7 @@ import play.api.test.Helpers._
 import controllers.{PatternDB, RulesetConverter, RuleSet}
 
 class PatternDBTest extends Specification {
-    def testRuleSet = RuleSet("test", "test", "testUrl", "testDesc",Seq(), Seq())
+    def testRuleSet = RuleSet("test", "test", Some("testUrl"), Some("testDesc"),Seq(), Seq())
 
     "open" should {
        "return empty patterndb elements when invalid file present" in {

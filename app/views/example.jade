@@ -1,0 +1,23 @@
+h4 Examples
+table.table
+  tr
+    td 
+      | Example Program
+    td
+      | Example Message
+    td 
+      | Example Values
+    td
+      | Example Tags
+  tr.table-striped(ng-repeat="example in rule.examples")
+    td   
+      | {{example.test_program}}
+    td
+      | {{example.test_message}}   
+    td
+      ul
+        li(ng-repeat="value in example.test_values")  {{value.name}} := {{value.value}}
+    td
+      ul
+        li(ng-repeat="tag in example.tags")  {{tag.text}}
+

@@ -4,6 +4,30 @@ enrich_model = (data, constructor, propagate) ->
   model.enrich() if propagate
   return model
 
+class Example
+    constructor : () ->
+        @test_message = ""
+        @test_program = ""
+        @test_values = Array()
+        @test_tags = Array()
+
+    add_value : () =>
+        @test_values.push(
+           name : ""
+           value : ""
+        )
+
+    add_tag : () =>
+        @test_tags.push(
+           text: ""
+        )
+
+    remove_value : (value) =>
+        remove_from_array(value, @test_values)
+
+    remove_tag : (tag) =>
+        remove_from_array(tag, @test_tags)
+
 class Rule
     constructor : () ->
         @provider = ""
@@ -12,6 +36,7 @@ class Rule
         @tags = Array()
         @values = Array()
         @id = uuid()
+        @examples = Array()
 
     add_value : () =>
         @values.push(
@@ -19,6 +44,37 @@ class Rule
            value : ""
         )
 
+    add_tag : () =>
+        @tags.push(
+           text: ""
+        )
+
+    add_pattern : () =>
+        @patterns.push(
+           text: ""
+        )
+
+    add_example : () =>
+        @examples.push(new Example)
+
+    remove_value : (value) =>
+        remove_from_array(value, @values)
+
+    remove_tag : (tag) =>
+        remove_from_array(tag, @tags)
+
+    remove_pattern : (pattern) =>
+        remove_from_array(pattern, @patterns)
+
+    remove_example : (example) =>
+        remove_from_array(example, @examples)
+
+    enrich : () =>
+        new_examples = []
+        angular.forEach(@examples, (obj) ->
+            new_examples.push(enrich_model(obj, Example, false)))
+        @examples = new_examples
+       
 class Ruleset
     constructor : (name) ->
         @name = name
@@ -35,7 +91,7 @@ class Ruleset
     enrich : () ->
         new_rules = []
         angular.forEach(@rules, (obj) ->
-            new_rules.push(enrich_model(obj, Rule, false)))
+            new_rules.push(enrich_model(obj, Rule, true)))
         @rules = new_rules
 
 class RulesetEditor

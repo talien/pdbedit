@@ -1,18 +1,5 @@
 scmodule = angular.module('sctest', ['ui.bootstrap']);
 
-create_empty_ruleset = function(ruleset_name)
-{
- var ruleset = { 
-     name: ruleset_name,
-     id : uuid(),
-     patterns : [],
-     rules : [],
-     tags : [],
-
-  };
- return ruleset;
-}
-
 scmodule.directive('onEnter', function() {
         return function(scope, element, attrs) {
             element.bind("keydown keypress", function(event) {

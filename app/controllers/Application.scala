@@ -1,7 +1,7 @@
 package controllers
 
 import scala.util.{Try, Success, Failure}
-import scala.xml.{Elem, Node, TopScope, Text, Null}
+import scala.xml.{Elem, Node, TopScope, Text, Null, UnprefixedAttribute}
 import play._
 import play.api.mvc._
 import play.api.libs.json._
@@ -24,6 +24,7 @@ abstract class PatternDBItem
 
 case class StringObj(text: String) extends PatternDBItem
 case class Value(name: String, value: String) extends PatternDBItem
+case class Example(test_message: String, test_program : String, test_values: Seq[Value], test_tags: Seq[StringObj]) extends PatternDBItem
 case class Rule(
     val id:String, 
     val provider: String, 
@@ -31,7 +32,8 @@ case class Rule(
     val description : Option[String], 
     val patterns: Seq[StringObj], 
     val tags: Seq[StringObj],
-    val values : Seq[Value]
+    val values : Seq[Value],
+    val examples : Seq[Example]
 ) extends PatternDBItem
 
 case class RuleSet(
@@ -61,10 +63,25 @@ object RulesetConverter {
              case Seq(item) => Some(item) 
            }
 
+    def getStringItemFromNodes(nodes: Seq[scala.xml.Node]) : String = 
+        nodes map ( element => element.text) 
+           match { 
+             case Seq() => throw new Exception("Missing mandatory element!")
+             case Seq(item) => item
+           }
+
     def XMLToValue(value : scala.xml.Node) : Value = 
         Value(
           (value \ "@name").toString(),
           value.text
+        )
+
+    def XMLToExample(example : scala.xml.Node) : Example = 
+        Example(
+          getStringItemFromNodes(example \ "test_message"),      
+          (example \ "test_message" \ "@program").toString(),
+          (example \ "test_values" \ "test_value") map ( value => XMLToValue(value) ),
+          (example \ "test_tags" \ "test_tag") map ( tag => StringObj(tag.text) )
         )
 
     def XMLToRule(rule: scala.xml.Node) : Rule =
@@ -75,7 +92,8 @@ object RulesetConverter {
           getOptionalStringItemFromNodes(rule \ "description"),
           (rule \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) ),
           (rule \ "tags" \ "tag") map (tag => StringObj(tag.text)),
-          (rule \ "values" \ "value") map (value => XMLToValue(value))
+          (rule \ "values" \ "value") map (value => XMLToValue(value)),
+          (rule \ "examples" \ "example") map (example => XMLToExample(example))
         )
 
     def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
@@ -101,11 +119,15 @@ object RulesetConverter {
          case None => Elem(null, tag, Null, TopScope)
       }
 
+   def valueToXML(item: Value, tagname: String) : scala.xml.Node = {
+      Elem(null, tagname, new UnprefixedAttribute("name", item.name, Null), TopScope, Text(item.value))
+   }
+
    def toXML(item: PatternDBItem) : scala.xml.Node = {
        item match {
           case StringObj(text) =>
              scala.xml.Unparsed(text)
-          case Rule(id, provider, rule_class, description, patterns, tags, values) =>
+          case Rule(id, provider, rule_class, description, patterns, tags, values, examples) =>
             <rule id={id} provider={provider} class={rule_class}>
              { optionalStringToXML(description, "description") }
              <patterns>
@@ -115,11 +137,12 @@ object RulesetConverter {
                { tags.map( tag => <tag>{toXML(tag)}</tag> ) }
              </tags>
              <values>
-               { values.map( value => toXML(value) ) }
+               { values.map( value => valueToXML(value, "value") ) }
              </values>
+             <examples>
+               { examples.map( example => toXML(example) ) }
+             </examples>
             </rule>
-          case Value(name, value) =>
-            <value name={name}>{value}</value>
           case RuleSet(name, id, url, description, patterns, rules) =>
             <ruleset id={id} name={name}>
             { optionalStringToXML(url, "url") }
@@ -131,6 +154,16 @@ object RulesetConverter {
               { rules.map( rule => toXML(rule) ) }
             </rules>
             </ruleset>
+          case Example(message, program, values, tags) =>
+            <example>
+              <test_message program={program}>{message}</test_message>
+              <test_values>
+               { values.map( value => valueToXML(value, "test_value") ) }
+              </test_values>
+              <test_tags>
+               { tags.map( tag => <test_tag>{toXML(tag)}</test_tag> ) }
+              </test_tags>
+            </example>
        }
    }
 
@@ -221,6 +254,7 @@ object Application extends Controller {
 
     implicit val stringobjFormat = Json.format[StringObj]
     implicit val valueFormat = Json.format[Value]
+    implicit val exampleFormat = Json.format[Example]
     implicit val ruleFormat = Json.format[Rule]
     implicit val rulesetFormat = Json.format[RuleSet]
 
