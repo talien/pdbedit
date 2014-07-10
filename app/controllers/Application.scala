@@ -1,7 +1,7 @@
 package controllers
 
 import scala.util.{Try, Success, Failure}
-import scala.xml.{Elem, Node, TopScope, Text, Null, UnprefixedAttribute}
+import scala.xml.{Elem, Node, TopScope, Text, Null, UnprefixedAttribute, MetaData}
 import play._
 import play.api.mvc._
 import play.api.libs.json._
@@ -33,7 +33,10 @@ case class Rule(
     val patterns: Seq[StringObj], 
     val tags: Seq[StringObj],
     val values : Seq[Value],
-    val examples : Seq[Example]
+    val examples : Seq[Example],
+    val context_id : Option[String],
+    val context_scope : Option[String],
+    val context_timeout : Option[String]
 ) extends PatternDBItem
 
 case class RuleSet(
@@ -70,6 +73,12 @@ object RulesetConverter {
              case Seq(item) => item
            }
 
+    def getOptionalStringAttributeFromNode(node: Seq[scala.xml.Node], attribute: String) : Option[String] =
+        (node \ ("@" + attribute)).toString() match {
+            case "" => None
+            case attribute => Some(attribute)
+        }
+
     def XMLToValue(value : scala.xml.Node) : Value = 
         Value(
           (value \ "@name").toString(),
@@ -93,7 +102,10 @@ object RulesetConverter {
           (rule \ "patterns" \ "pattern") map ( pattern => StringObj(pattern.text) ),
           (rule \ "tags" \ "tag") map (tag => StringObj(tag.text)),
           (rule \ "values" \ "value") map (value => XMLToValue(value)),
-          (rule \ "examples" \ "example") map (example => XMLToExample(example))
+          (rule \ "examples" \ "example") map (example => XMLToExample(example)),
+          getOptionalStringAttributeFromNode(rule, "context-id"),
+          getOptionalStringAttributeFromNode(rule, "context-scope"),
+          getOptionalStringAttributeFromNode(rule, "context-timeout")
         )
 
     def XMLToRuleset(ruleset:  scala.xml.Node) : RuleSet = RuleSet(
@@ -123,11 +135,18 @@ object RulesetConverter {
       Elem(null, tagname, new UnprefixedAttribute("name", item.name, Null), TopScope, Text(item.value))
    }
 
+   def optionalStringToXML(attribute_name: String, attribute_value: Option[String], nextAttribute: MetaData) = {
+      attribute_value match {
+          case None => nextAttribute
+          case Some(value) => new UnprefixedAttribute(attribute_name, value, nextAttribute)
+      }
+   }
+
    def toXML(item: PatternDBItem) : scala.xml.Node = {
        item match {
           case StringObj(text) =>
              scala.xml.Unparsed(text)
-          case Rule(id, provider, rule_class, description, patterns, tags, values, examples) =>
+          case Rule(id, provider, rule_class, description, patterns, tags, values, examples, context_id, context_scope, context_timeout) =>
             <rule id={id} provider={provider} class={rule_class}>
              { optionalStringToXML(description, "description") }
              <patterns>
@@ -142,7 +161,9 @@ object RulesetConverter {
              <examples>
                { examples.map( example => toXML(example) ) }
              </examples>
-            </rule>
+            </rule> % optionalStringToXML("context-id", context_id, 
+                      optionalStringToXML("context-scope", context_scope, 
+                      optionalStringToXML("context-timeout", context_timeout, Null)))
           case RuleSet(name, id, url, description, patterns, rules) =>
             <ruleset id={id} name={name}>
             { optionalStringToXML(url, "url") }

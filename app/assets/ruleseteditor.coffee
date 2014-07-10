@@ -37,6 +37,7 @@ class Rule
         @values = Array()
         @id = uuid()
         @examples = Array()
+        @has_context = false
 
     add_value : () =>
         @values.push(
@@ -53,6 +54,12 @@ class Rule
         @patterns.push(
            text: ""
         )
+
+    add_context : () =>
+        @has_context = true
+        @context_id = ""
+        @context_scope = "global"
+        @context_timeout = ""
 
     add_example : () =>
         @examples.push(new Example)
@@ -74,6 +81,8 @@ class Rule
         angular.forEach(@examples, (obj) ->
             new_examples.push(enrich_model(obj, Example, false)))
         @examples = new_examples
+        if @context_id
+          @has_context = true
        
 class Ruleset
     constructor : (name) ->
@@ -101,6 +110,7 @@ class RulesetEditor
         @show = false
         @is_rule_editing = false
         @is_editing = false
+        @context_scopes = [ "process", "program", "host", "global" ]
 
     add_ruleset: (ruleset_name) ->
         @ruleset = new Ruleset(ruleset_name)

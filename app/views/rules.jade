@@ -13,7 +13,19 @@ accordion(close-others="true")
         p
           | Description:
           input(ng-model="rule.description")
-        <!-- TODO: select --> 
+        ng-switch(on="rule.has_context")
+          div(ng-switch-when="true")
+            p
+              | Context ID:
+              input(ng-model="rule.context_id")
+            p
+              | Context Scope:
+              select.span3(name="parser_select" ng-model="rule.context_scope" ng-options="scope for scope in ruleset_editor.context_scopes")
+            p
+              | Description:
+              input(ng-model="rule.context_timeout")
+          div(ng-switch-default)
+            = render("button-add.jade", Map( "click" -> "rule.add_context()", "caption" -> "Add context items"))
         table
           tr(ng-repeat="pattern in rule.patterns")
             td  
@@ -53,6 +65,14 @@ accordion(close-others="true")
           | Provider: {{rule.provider}} 
         p
           | Class: {{rule.rule_class}}
+        div(ng-show="rule.has_context")
+          p
+            | Context ID: {{rule.context_id}}
+          p
+            | Context Scope: {{rule.context_scope}}
+          p
+            | Context Timeout: {{rule.context_timeout}}
+
         h4 Patterns:
         table.table
           tr(ng-repeat="pattern in rule.patterns")
